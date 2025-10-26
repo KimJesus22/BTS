@@ -1,58 +1,58 @@
+# BTS-app
 
-# Aplicación Full Stack de BTS
+Una aplicación web sencilla dedicada a los miembros del grupo musical BTS. Este proyecto sirve como un ejemplo práctico de una aplicación full-stack con un frontend en React y un backend en Node.js.
 
-Una aplicación web simple construida con React y Node.js que muestra información sobre los miembros del grupo musical BTS.
+## Características
 
-Este proyecto sirve como un ejemplo básico de una aplicación full-stack con un frontend y un backend separados.
+- **Listado de Miembros**: Muestra tarjetas con la información básica de cada miembro.
+- **Vista de Detalle**: Permite hacer clic en un miembro para ver información más detallada.
+- **Backend Sencillo**: Utiliza un archivo `db.json` como base de datos para servir la información de los miembros.
 
 ## Tecnologías Utilizadas
 
-- **Frontend:** React
-- **Backend:** Node.js, Express
-- **Datos:** Archivo JSON estático
+- **Frontend**: React, CSS
+- **Backend**: Node.js, Express
+- **Enrutamiento**: React Router DOM (planeado)
 
 ## Instalación y Uso
 
-Sigue estos pasos para ejecutar el proyecto en tu máquina local.
+Sigue estos pasos para levantar el proyecto en tu entorno local.
 
-### Prerrequisitos
+### Backend
 
-- Tener instalado Node.js y npm.
+1. Navega a la carpeta del backend:
+   ```sh
+   cd BTS-app/backend
+   ```
+2. Instala las dependencias:
+   ```sh
+   npm install
+   ```
+3. Inicia el servidor (por defecto en `http://localhost:3001`):
+   ```sh
+   npm start
+   ```
 
-### 1. Configuración del Backend
+### Frontend
 
-Primero, inicia el servidor del backend.
+1. En otra terminal, navega a la carpeta del frontend:
+   ```sh
+   cd BTS-app/frontend
+   ```
+2. Instala las dependencias:
+   ```sh
+   npm install
+   ```
+3. Inicia la aplicación de React (se abrirá en `http://localhost:3000`):
+   ```sh
+   npm start
+   ```
 
-```bash
-# 1. Navega a la carpeta del backend
-cd BTS-app/backend
+## Mejoras Futuras
 
-# 2. Instala las dependencias
-npm install
+Este proyecto tiene un gran potencial de mejora. Algunas ideas basadas en las mejores prácticas de la industria se encuentran documentadas en el archivo [ANALISIS_Y_MEJORAS.md](ANALISIS_Y_MEJORAS.md). Las propuestas incluyen:
 
-# 3. Inicia el servidor
-node server.js
-```
-
-El servidor del backend se ejecutará en `http://localhost:3001`.
-
-### 2. Configuración del Frontend
-
-Ahora, en una **nueva terminal**, configura el frontend de React.
-
-```bash
-# 1. Navega a la carpeta del frontend
-cd BTS-app/frontend
-
-# 2. Instala las dependencias
-npm install
-
-# 3. Inicia el servidor de desarrollo de React
-npm start
-```
-
-### 3. Accede a la Aplicación
-
-La aplicación se abrirá automáticamente en tu navegador. Si no es así, puedes acceder en la siguiente URL:
-
-[http://localhost:3000](http://localhost:3000)
+- Diseño responsivo y **mobile-first**.
+- Funcionalidades de **búsqueda y filtrado**.
+- Mejoras de **accesibilidad** (WCAG).
+- **Personalización** para guardar miembros favoritos.
