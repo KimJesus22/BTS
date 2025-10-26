@@ -1,0 +1,47 @@
+
+{
+  "members": [
+    {
+      "id": 1,
+      "name": "RM",
+      "real_name": "Kim Nam-joon",
+      "role": "Leader, Rapper"
+    },
+    {
+      "id": 2,
+      "name": "Jin",
+      "real_name": "Kim Seok-jin",
+      "role": "Vocalist, Visual"
+    },
+    {
+      "id": 3,
+      "name": "Suga",
+      "real_name": "Min Yoon-gi",
+      "role": "Rapper"
+    },
+    {
+      "id": 4,
+      "name": "J-Hope",
+      "real_name": "Jung Ho-seok",
+      "role": "Dancer, Rapper"
+    },
+    {
+      "id": 5,
+      "name": "Jimin",
+      "real_name": "Park Ji-min",
+      "role": "Dancer, Vocalist"
+    },
+    {
+      "id": 6,
+      "name": "V",
+      "real_name": "Kim Tae-hyung",
+      "role": "Vocalist, Dancer"
+    },
+    {
+      "id": 7,
+      "name": "Jungkook",
+      "real_name": "Jeon Jung-kook",
+      "role": "Main Vocalist, Dancer, Center"
+    }
+  ]
+}
