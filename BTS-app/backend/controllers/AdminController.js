@@ -5,52 +5,20 @@ const Wearable = require('../models/Wearable');
 const AccessibilityConfig = require('../models/AccessibilityConfig');
 const GamificationService = require('../services/GamificationService');
 const OptimizationService = require('../services/OptimizationService');
+const { validateWithJoi, adminSchemas } = require('../middlewares/validation');
 
 class AdminController {
-  // Validación para crear miembro
-  createMemberSchema = Joi.object({
-    id: Joi.number().integer().min(1).max(7).required(),
-    name: Joi.string().trim().min(1).max(50).required(),
-    real_name: Joi.string().trim().min(1).max(100).required(),
-    role: Joi.string().trim().min(1).max(100).required(),
-    biography: Joi.object({
-      es: Joi.string().trim().min(1).required(),
-      en: Joi.string().trim().min(1).required()
-    }).required(),
-    birth_date: Joi.date().required(),
-    birth_place: Joi.string().trim().min(1).required(),
-    debut_date: Joi.date().default(() => new Date('2013-06-13')),
-    social_media: Joi.object({
-      instagram: Joi.string().uri(),
-      twitter: Joi.string().uri(),
-      weverse: Joi.string().uri()
-    }),
-    achievements: Joi.array().items(Joi.object({
-      title: Joi.string().trim().min(1).max(200).required(),
-      year: Joi.number().integer().min(2013).max(new Date().getFullYear()).required(),
-      description: Joi.string().trim().min(1).max(500).required()
-    }))
-  });
-
   // Crear nuevo miembro (solo administradores)
   async createMember(req, res) {
     try {
-      const { error, value } = this.createMemberSchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({
-          error: 'Datos del miembro inválidos',
-          details: error.details[0].message
-        });
-      }
-
+      // La validación ya se realizó en el middleware
       // Verificar si el ID ya existe
-      const existingMember = await Member.findOne({ id: value.id });
+      const existingMember = await Member.findByPk(req.body.id);
       if (existingMember) {
         return res.status(400).json({ error: 'Ya existe un miembro con ese ID' });
       }
 
-      const member = new Member(value);
-      await member.save();
+      const member = await Member.create(req.body);
 
       res.status(201).json({
         message: 'Miembro creado exitosamente',
@@ -67,14 +35,14 @@ class AdminController {
     try {
       const memberId = parseInt(req.params.id);
 
-      const member = await Member.findOne({ id: memberId });
+      const member = await Member.findByPk(memberId);
       if (!member) {
         return res.status(404).json({ error: 'Miembro no encontrado' });
       }
 
       const allowedFields = [
-        'name', 'real_name', 'role', 'biography', 'birth_date',
-        'birth_place', 'debut_date', 'social_media', 'achievements'
+        'name', 'real_name', 'role', 'biography_es', 'biography_en', 'birth_date',
+        'birth_place', 'debut_date', 'instagram', 'twitter', 'weverse', 'achievements'
       ];
 
       // Actualizar solo campos permitidos
@@ -101,10 +69,12 @@ class AdminController {
     try {
       const memberId = parseInt(req.params.id);
 
-      const member = await Member.findOneAndDelete({ id: memberId });
+      const member = await Member.findByPk(memberId);
       if (!member) {
         return res.status(404).json({ error: 'Miembro no encontrado' });
       }
+
+      await member.destroy();
 
       res.json({
         message: 'Miembro eliminado exitosamente',
@@ -121,15 +91,14 @@ class AdminController {
     try {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
-      const skip = (page - 1) * limit;
+      const offset = (page - 1) * limit;
 
-      const users = await User.find({})
-        .select('-password -loginAttempts -lockUntil')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit);
-
-      const total = await User.countDocuments();
+      const { count: total, rows: users } = await User.findAndCountAll({
+        attributes: { exclude: ['password', 'loginAttempts', 'lockUntil'] },
+        order: [['createdAt', 'DESC']],
+        offset,
+        limit
+      });
 
       res.json({
         users,
@@ -150,9 +119,15 @@ class AdminController {
   // Obtener usuario por ID (solo administradores)
   async getUserById(req, res) {
     try {
-      const user = await User.findById(req.params.id)
-        .select('-password -loginAttempts -lockUntil')
-        .populate('profile.favoriteMembers', 'id name role');
+      const user = await User.findByPk(req.params.id, {
+        attributes: { exclude: ['password', 'loginAttempts', 'lockUntil'] },
+        include: [{
+          model: User.sequelize.models.Member,
+          as: 'favoriteMembers',
+          attributes: ['id', 'name', 'role'],
+          through: { attributes: [] }
+        }]
+      });
 
       if (!user) {
         return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -168,13 +143,10 @@ class AdminController {
   // Actualizar rol de usuario (solo administradores)
   async updateUserRole(req, res) {
     try {
+      // La validación ya se realizó en el middleware
       const { role } = req.body;
 
-      if (!['user', 'admin', 'moderator'].includes(role)) {
-        return res.status(400).json({ error: 'Rol inválido' });
-      }
-
-      const user = await User.findById(req.params.id);
+      const user = await User.findByPk(req.params.id);
       if (!user) {
         return res.status(404).json({ error: 'Usuario no encontrado' });
       }
@@ -185,7 +157,7 @@ class AdminController {
       res.json({
         message: 'Rol de usuario actualizado exitosamente',
         user: {
-          id: user._id,
+          id: user.id,
           username: user.username,
           email: user.email,
           role: user.role
@@ -209,12 +181,12 @@ class AdminController {
         accessibilityConfigs,
         gamificationStats
       ] = await Promise.all([
-        User.countDocuments(),
-        User.countDocuments({ isActive: true }),
-        User.countDocuments({ role: 'admin' }),
-        Member.countDocuments(),
-        Wearable.countDocuments({ 'connection.isConnected': true }),
-        AccessibilityConfig.countDocuments(),
+        User.count(),
+        User.count({ where: { isActive: true } }),
+        User.count({ where: { role: 'admin' } }),
+        Member.count(),
+        Wearable.count({ where: { isConnected: true } }),
+        AccessibilityConfig.count(),
         GamificationService.getGamificationStats()
       ]);
 
@@ -325,9 +297,9 @@ class AdminController {
         accessibilityConfig,
         wearable
       ] = await Promise.all([
-        User.findById(userId).select('-password -loginAttempts -lockUntil'),
-        AccessibilityConfig.findOne({ userId }),
-        Wearable.findOne({ userId })
+        User.findByPk(userId, { attributes: { exclude: ['password', 'loginAttempts', 'lockUntil'] } }),
+        AccessibilityConfig.findOne({ where: { userId } }),
+        Wearable.findOne({ where: { userId } })
       ]);
 
       if (!user) {
@@ -335,9 +307,9 @@ class AdminController {
       }
 
       const exportData = {
-        user: user.toObject(),
-        accessibilityConfig: accessibilityConfig?.toObject() || null,
-        wearable: wearable?.toObject() || null,
+        user: user.toJSON(),
+        accessibilityConfig: accessibilityConfig?.toJSON() || null,
+        wearable: wearable?.toJSON() || null,
         exportDate: new Date(),
         exportedBy: req.userId
       };
@@ -355,9 +327,10 @@ class AdminController {
   // Suspender usuario temporalmente
   async suspendUser(req, res) {
     try {
+      // La validación ya se realizó en el middleware
       const { duration, reason } = req.body; // duration en horas
 
-      const user = await User.findById(req.params.id);
+      const user = await User.findByPk(req.params.id);
       if (!user) {
         return res.status(404).json({ error: 'Usuario no encontrado' });
       }
@@ -368,7 +341,7 @@ class AdminController {
       res.json({
         message: `Usuario suspendido por ${duration} horas`,
         suspension: {
-          userId: user._id,
+          userId: user.id,
           username: user.username,
           lockUntil: user.lockUntil,
           reason: reason || 'Sin especificar'
@@ -383,12 +356,12 @@ class AdminController {
   // Reactivar usuario
   async reactivateUser(req, res) {
     try {
-      const user = await User.findById(req.params.id);
+      const user = await User.findByPk(req.params.id);
       if (!user) {
         return res.status(404).json({ error: 'Usuario no encontrado' });
       }
 
-      user.lockUntil = undefined;
+      user.lockUntil = null;
       user.loginAttempts = 0;
       user.isActive = true;
       await user.save();
@@ -396,7 +369,7 @@ class AdminController {
       res.json({
         message: 'Usuario reactivado exitosamente',
         user: {
-          id: user._id,
+          id: user.id,
           username: user.username,
           email: user.email,
           isActive: user.isActive

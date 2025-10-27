@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const connectDB = require('./config/database');
+const { connectDB } = require('./config/database');
 const config = require('./config/index');
 
 // Importar middlewares
@@ -30,6 +30,10 @@ const {
   clientOptimization,
   batteryOptimization
 } = require('./middlewares/optimization');
+
+// Importar middleware de validación y error
+const { sanitizeInput: validationSanitizeInput } = require('./middlewares/validation');
+const errorHandler = require('./middlewares/errorHandler');
 
 // Importar rutas
 const authRoutes = require('./routes/auth');
@@ -61,6 +65,7 @@ app.use(securityLogger);
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(sanitizeInput);
+app.use(validationSanitizeInput); // Sanitización adicional con express-validator
 app.use(validateApiHeaders);
 app.use(bruteForceProtection);
 
@@ -106,19 +111,8 @@ app.get('/api', cacheControl(300), (req, res) => {
   });
 });
 
-// Middleware de manejo de errores
-app.use((err, req, res, next) => {
-  errorLogger(err, req, res, next);
-
-  // No enviar detalles del error en producción
-  const isDevelopment = config.server.nodeEnv === 'development';
-
-  res.status(err.status || 500).json({
-    error: err.message || 'Error interno del servidor',
-    ...(isDevelopment && { stack: err.stack }),
-    timestamp: new Date().toISOString()
-  });
-});
+// Middleware de manejo de errores centralizado
+app.use(errorHandler);
 
 // Middleware para rutas no encontradas
 app.use((req, res) => {

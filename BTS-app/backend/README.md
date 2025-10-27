@@ -1,6 +1,6 @@
 # BTS-app Backend
 
-Backend RESTful API para la aplicación BTS con arquitectura MVC completa, desarrollado con Express.js y MongoDB.
+Backend RESTful API para la aplicación BTS con arquitectura MVC completa, desarrollado con Express.js y PostgreSQL.
 
 ## 🚀 Características
 
@@ -19,7 +19,7 @@ Backend RESTful API para la aplicación BTS con arquitectura MVC completa, desar
 ```
 backend/
 ├── config/           # Configuraciones de la aplicación
-│   ├── database.js   # Conexión a MongoDB
+│   ├── database.js   # Conexión a PostgreSQL con Sequelize
 │   └── index.js      # Configuración centralizada
 ├── controllers/      # Controladores de la aplicación
 │   ├── MembersController.js
@@ -30,7 +30,7 @@ backend/
 │   ├── logger.js     # Logging estructurado
 │   ├── security.js   # Seguridad y rate limiting
 │   └── optimization.js # Optimizaciones de rendimiento
-├── models/          # Modelos de datos (Mongoose)
+├── models/          # Modelos de datos (Sequelize)
 │   ├── Member.js
 │   ├── User.js
 │   ├── AccessibilityConfig.js
@@ -77,10 +77,12 @@ backend/
    # Editar .env con tus configuraciones
    ```
 
-4. **Iniciar MongoDB**
+4. **Iniciar PostgreSQL**
    ```bash
-   # Asegúrate de tener MongoDB corriendo en localhost:27017
-   # o configura MONGODB_URI en .env
+   # Asegúrate de tener PostgreSQL corriendo en localhost:5432
+   # o configura las variables de entorno DB_* en .env
+   # Para desarrollo rápido, puedes usar Docker:
+   # docker run --name postgres-bts -e POSTGRES_DB=bts_app -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=admin123 -p 5432:5432 -d postgres:15
    ```
 
 5. **Ejecutar la aplicación**
@@ -110,7 +112,12 @@ cp .env.example .env
 #### Variables de Base de Datos
 | Variable | Descripción | Valor por defecto |
 |----------|-------------|-------------------|
-| `MONGODB_URI` | URI de conexión a MongoDB | `mongodb://localhost:27017/bts-app` |
+| `DB_HOST` | Host de PostgreSQL | `localhost` |
+| `DB_PORT` | Puerto de PostgreSQL | `5432` |
+| `DB_NAME` | Nombre de la base de datos | `bts_app` |
+| `DB_USER` | Usuario de PostgreSQL | `postgres` |
+| `DB_PASSWORD` | Contraseña de PostgreSQL | `admin123` |
+| `DB_DIALECT` | Dialecto de base de datos | `postgres` |
 
 #### Variables del Servidor
 | Variable | Descripción | Valor por defecto |
@@ -176,14 +183,35 @@ cp .env.example .env
 
 ### Base de Datos
 
-La aplicación utiliza MongoDB con los siguientes esquemas principales:
+La aplicación utiliza PostgreSQL con Sequelize ORM y los siguientes modelos principales:
 
 - **Members**: Información de los miembros de BTS
 - **Users**: Usuarios de la aplicación con gamificación
 - **AccessibilityConfig**: Configuraciones de accesibilidad por usuario
 - **Wearable**: Datos de dispositivos portátiles conectados
 
+#### Migración desde db.json
+
+Para poblar la base de datos inicial con datos de `db.json`, ejecuta:
+
+```bash
+node scripts/seed.js
+```
+
+Este script creará las tablas automáticamente y poblará los datos de los miembros de BTS.
+
 ## 📚 API Endpoints
+
+### Cambios Importantes en la Migración
+
+Con la migración a PostgreSQL, se han realizado los siguientes cambios en la API:
+
+- **Campos de biografía**: `biography.es` y `biography.en` ahora son `biography_es` y `biography_en`
+- **Campos de estadísticas**: Los campos `stats.followers`, `stats.likes`, `stats.views` ahora son campos directos: `followers`, `likes`, `views`
+- **Campos de accesibilidad**: Los campos anidados ahora usan snake_case (ej: `screenReader.enabled` → `screenReader_enabled`)
+- **Campos de gamificación**: Los campos anidados ahora usan snake_case (ej: `gamification.level` → `gamification_level`)
+
+Los endpoints mantienen la misma funcionalidad pero ahora utilizan PostgreSQL como backend de base de datos.
 
 ### Autenticación
 - `POST /api/auth/register` - Registro de usuario
@@ -307,13 +335,18 @@ Soporte para:
 
 ### Requisitos
 - Node.js 16+
-- MongoDB 4.4+
+- PostgreSQL 13+
 - NPM o Yarn
 
 ### Variables de Producción
 ```env
 NODE_ENV=production
-MONGODB_URI=mongodb://production-server:27017/bts-prod
+DB_HOST=tu-servidor-postgres
+DB_PORT=5432
+DB_NAME=bts_prod
+DB_USER=tu_usuario_prod
+DB_PASSWORD=tu_contraseña_segura
+DB_DIALECT=postgres
 JWT_SECRET=tu-clave-secreta-muy-segura
 CORS_ORIGIN=https://tu-dominio.com
 ```

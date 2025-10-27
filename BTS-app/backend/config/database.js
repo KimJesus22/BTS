@@ -1,18 +1,36 @@
-const mongoose = require('mongoose');
+const { Sequelize } = require('sequelize');
 require('dotenv').config();
+
+const sequelize = new Sequelize(
+  process.env.DB_NAME || 'bts_app',
+  process.env.DB_USER || 'postgres',
+  process.env.DB_PASSWORD || 'admin123',
+  {
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    dialect: process.env.DB_DIALECT || 'postgres',
+    logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    }
+  }
+);
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/bts-app', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await sequelize.authenticate();
+    console.log('PostgreSQL Connected successfully');
 
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    // Sincronizar modelos con la base de datos
+    await sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
+    console.log('Database synchronized');
   } catch (error) {
-    console.error('Error connecting to MongoDB:', error.message);
+    console.error('Error connecting to PostgreSQL:', error.message);
     process.exit(1);
   }
 };
 
-module.exports = connectDB;
+module.exports = { connectDB, sequelize };

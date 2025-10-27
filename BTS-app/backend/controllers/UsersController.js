@@ -5,39 +5,14 @@ const Wearable = require('../models/Wearable');
 const AuthenticationService = require('../services/AuthenticationService');
 const GamificationService = require('../services/GamificationService');
 const OptimizationService = require('../services/OptimizationService');
+const { validateWithJoi, authSchemas, userSchemas } = require('../middlewares/validation');
 
 class UsersController {
-  // Validación para registro
-  registerSchema = Joi.object({
-    username: Joi.string().alphanum().min(3).max(50).required(),
-    email: Joi.string().email().required(),
-    password: Joi.string().min(6).required(),
-    profile: Joi.object({
-      firstName: Joi.string().trim().max(50),
-      lastName: Joi.string().trim().max(50),
-      bio: Joi.string().trim().max(500),
-      language: Joi.string().valid('es', 'en').default('es')
-    }),
-    accessibility: Joi.object({
-      fontSize: Joi.string().valid('small', 'medium', 'large').default('medium'),
-      highContrast: Joi.boolean().default(false),
-      reducedMotion: Joi.boolean().default(false),
-      screenReader: Joi.boolean().default(false)
-    })
-  });
-
-  // Registro de usuario
-  async register(req, res) {
+  // Registro de usuario con validación centralizada
+  async register(req, res, next) {
     try {
-      const { error, value } = this.registerSchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({
-          error: 'Datos de registro inválidos',
-          details: error.details[0].message
-        });
-      }
-
-      const result = await AuthenticationService.register(value);
+      // La validación ya se realizó en el middleware
+      const result = await AuthenticationService.register(req.body);
 
       // Otorgar logro de primer login
       await GamificationService.grantAchievement(result.user.id, 'first_login');
@@ -48,29 +23,15 @@ class UsersController {
         token: result.token
       });
     } catch (error) {
-      console.error('Error en registro:', error);
-      res.status(400).json({ error: error.message });
+      next(error);
     }
   }
 
-  // Validación para login
-  loginSchema = Joi.object({
-    identifier: Joi.string().required(), // email o username
-    password: Joi.string().required()
-  });
-
-  // Inicio de sesión
-  async login(req, res) {
+  // Inicio de sesión con validación centralizada
+  async login(req, res, next) {
     try {
-      const { error, value } = this.loginSchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({
-          error: 'Credenciales inválidas',
-          details: error.details[0].message
-        });
-      }
-
-      const result = await AuthenticationService.login(value);
+      // La validación ya se realizó en el middleware
+      const result = await AuthenticationService.login(req.body);
 
       // Actualizar racha y verificar logros
       await GamificationService.updateStreak(result.user.id);
@@ -81,215 +42,189 @@ class UsersController {
         token: result.token
       });
     } catch (error) {
-      console.error('Error en login:', error);
-      res.status(401).json({ error: error.message });
+      next(error);
     }
   }
 
   // Obtener perfil del usuario autenticado
-  async getProfile(req, res) {
+  async getProfile(req, res, next) {
     try {
-      const user = await User.findById(req.userId)
-        .select('-password -loginAttempts -lockUntil')
-        .populate('profile.favoriteMembers', 'id name role');
+      const user = await User.findByPk(req.userId, {
+        attributes: { exclude: ['password', 'loginAttempts', 'lockUntil'] },
+        include: [{
+          model: User.sequelize.models.Member,
+          as: 'favoriteMembers',
+          attributes: ['id', 'name', 'role'],
+          through: { attributes: [] }
+        }]
+      });
 
       if (!user) {
-        return res.status(404).json({ error: 'Usuario no encontrado' });
+        const notFoundError = new Error('Usuario no encontrado');
+        notFoundError.name = 'NotFoundError';
+        return next(notFoundError);
       }
 
       res.json({ user });
     } catch (error) {
-      console.error('Error obteniendo perfil:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      next(error);
     }
   }
 
-  // Validación para actualizar perfil
-  updateProfileSchema = Joi.object({
-    profile: Joi.object({
-      firstName: Joi.string().trim().max(50),
-      lastName: Joi.string().trim().max(50),
-      bio: Joi.string().trim().max(500),
-      avatar: Joi.string().uri(),
-      language: Joi.string().valid('es', 'en'),
-      favoriteMembers: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/))
-    }),
-    accessibility: Joi.object({
-      fontSize: Joi.string().valid('small', 'medium', 'large'),
-      highContrast: Joi.boolean(),
-      reducedMotion: Joi.boolean(),
-      screenReader: Joi.boolean()
-    })
-  });
-
-  // Actualizar perfil
-  async updateProfile(req, res) {
+  // Actualizar perfil con validación centralizada
+  async updateProfile(req, res, next) {
     try {
-      const { error, value } = this.updateProfileSchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({
-          error: 'Datos inválidos',
-          details: error.details[0].message
-        });
-      }
-
-      const user = await User.findById(req.userId);
+      // La validación ya se realizó en el middleware
+      const user = await User.findByPk(req.userId);
       if (!user) {
-        return res.status(404).json({ error: 'Usuario no encontrado' });
+        const notFoundError = new Error('Usuario no encontrado');
+        notFoundError.name = 'NotFoundError';
+        return next(notFoundError);
       }
 
       // Actualizar campos
-      if (value.profile) {
-        Object.assign(user.profile, value.profile);
+      if (req.body.profile) {
+        if (req.body.profile.firstName) user.firstName = req.body.profile.firstName;
+        if (req.body.profile.lastName) user.lastName = req.body.profile.lastName;
+        if (req.body.profile.avatar) user.avatar = req.body.profile.avatar;
+        if (req.body.profile.bio) user.bio = req.body.profile.bio;
+        if (req.body.profile.favoriteMembers) user.favoriteMembers = req.body.profile.favoriteMembers;
+        if (req.body.profile.language) user.language = req.body.profile.language;
       }
 
-      if (value.accessibility) {
-        Object.assign(user.accessibility, value.accessibility);
+      if (req.body.accessibility) {
+        if (req.body.accessibility.fontSize) user.fontSize = req.body.accessibility.fontSize;
+        if (req.body.accessibility.highContrast) user.highContrast = req.body.accessibility.highContrast;
+        if (req.body.accessibility.reducedMotion) user.reducedMotion = req.body.accessibility.reducedMotion;
+        if (req.body.accessibility.screenReader) user.screenReader = req.body.accessibility.screenReader;
       }
 
       await user.save();
 
       // Verificar logro de perfil completo
-      const isProfileComplete = user.profile.firstName &&
-                               user.profile.lastName &&
-                               user.profile.bio &&
-                               user.profile.avatar;
+      const isProfileComplete = user.firstName &&
+                                user.lastName &&
+                                user.bio &&
+                                user.avatar;
 
       if (isProfileComplete) {
-        await GamificationService.grantAchievement(user._id, 'profile_complete');
+        await GamificationService.grantAchievement(user.id, 'profile_complete');
       }
 
       // Limpiar caché de optimizaciones
-      OptimizationService.clearCache(user._id);
+      OptimizationService.clearCache(user.id);
 
       res.json({
         message: 'Perfil actualizado exitosamente',
         user: {
-          id: user._id,
+          id: user.id,
           username: user.username,
           email: user.email,
-          profile: user.profile,
-          accessibility: user.accessibility
+          profile: {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            avatar: user.avatar,
+            bio: user.bio,
+            favoriteMembers: user.favoriteMembers,
+            language: user.language
+          },
+          accessibility: {
+            fontSize: user.fontSize,
+            highContrast: user.highContrast,
+            reducedMotion: user.reducedMotion,
+            screenReader: user.screenReader
+          }
         }
       });
     } catch (error) {
-      console.error('Error actualizando perfil:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      next(error);
     }
   }
 
-  // Validación para cambiar contraseña
-  changePasswordSchema = Joi.object({
-    currentPassword: Joi.string().required(),
-    newPassword: Joi.string().min(6).required()
-  });
-
-  // Cambiar contraseña
-  async changePassword(req, res) {
+  // Cambiar contraseña con validación centralizada
+  async changePassword(req, res, next) {
     try {
-      const { error, value } = this.changePasswordSchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({
-          error: 'Datos inválidos',
-          details: error.details[0].message
-        });
-      }
-
+      // La validación ya se realizó en el middleware
       await AuthenticationService.changePassword(
         req.userId,
-        value.currentPassword,
-        value.newPassword
+        req.body.currentPassword,
+        req.body.newPassword
       );
 
       res.json({ message: 'Contraseña cambiada exitosamente' });
     } catch (error) {
-      console.error('Error cambiando contraseña:', error);
-      res.status(400).json({ error: error.message });
+      next(error);
     }
   }
 
   // Obtener configuración de accesibilidad
-  async getAccessibilityConfig(req, res) {
+  async getAccessibilityConfig(req, res, next) {
     try {
-      let config = await AccessibilityConfig.findOne({ userId: req.userId });
+      let config = await AccessibilityConfig.findOne({ where: { userId: req.userId } });
 
       if (!config) {
         // Crear configuración por defecto
-        config = new AccessibilityConfig({ userId: req.userId });
-        await config.save();
+        config = await AccessibilityConfig.create({ userId: req.userId });
       }
 
       res.json({ accessibilityConfig: config });
     } catch (error) {
-      console.error('Error obteniendo configuración de accesibilidad:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      next(error);
     }
   }
 
-  // Validación para actualizar configuración de accesibilidad
-  updateAccessibilitySchema = Joi.object({
-    preferences: Joi.object({
-      fontSize: Joi.string().valid('small', 'medium', 'large', 'extra-large'),
-      fontFamily: Joi.string().valid('default', 'dyslexic', 'sans-serif', 'serif'),
-      colorScheme: Joi.string().valid('default', 'high-contrast', 'dark', 'light', 'colorblind-friendly'),
-      motion: Joi.string().valid('default', 'reduced', 'none'),
-      sound: Joi.string().valid('default', 'muted', 'screen-reader')
-    }),
-    assistiveTechnologies: Joi.object({
-      screenReader: Joi.object({
-        enabled: Joi.boolean(),
-        type: Joi.string().valid('none', 'nvda', 'jaaws', 'voiceover', 'talkback', 'other')
-      }),
-      keyboardNavigation: Joi.boolean(),
-      focusManagement: Joi.boolean(),
-      skipLinks: Joi.boolean()
-    }),
-    contentAdaptations: Joi.object({
-      simplifiedLanguage: Joi.boolean(),
-      largePrint: Joi.boolean(),
-      audioDescriptions: Joi.boolean(),
-      signLanguage: Joi.boolean()
-    }),
-    deviceSettings: Joi.object({
-      touchTargets: Joi.string().valid('default', 'large', 'extra-large'),
-      gestureSupport: Joi.boolean(),
-      voiceCommands: Joi.boolean()
-    }),
-    notifications: Joi.object({
-      accessibilityAlerts: Joi.boolean(),
-      guidanceMessages: Joi.boolean(),
-      errorAnnouncements: Joi.boolean()
-    })
-  });
-
-  // Actualizar configuración de accesibilidad
-  async updateAccessibilityConfig(req, res) {
+  // Actualizar configuración de accesibilidad con validación centralizada
+  async updateAccessibilityConfig(req, res, next) {
     try {
-      const { error, value } = this.updateAccessibilitySchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({
-          error: 'Configuración inválida',
-          details: error.details[0].message
-        });
-      }
-
-      let config = await AccessibilityConfig.findOne({ userId: req.userId });
+      // La validación ya se realizó en el middleware
+      let config = await AccessibilityConfig.findOne({ where: { userId: req.userId } });
 
       if (!config) {
-        config = new AccessibilityConfig({ userId: req.userId });
+        config = await AccessibilityConfig.create({ userId: req.userId });
       }
 
       // Actualizar configuración
-      Object.assign(config.preferences, value.preferences || {});
-      Object.assign(config.assistiveTechnologies, value.assistiveTechnologies || {});
-      Object.assign(config.contentAdaptations, value.contentAdaptations || {});
-      Object.assign(config.deviceSettings, value.deviceSettings || {});
-      Object.assign(config.notifications, value.notifications || {});
+      if (req.body.preferences) {
+        if (req.body.preferences.fontSize) config.fontSize = req.body.preferences.fontSize;
+        if (req.body.preferences.fontFamily) config.fontFamily = req.body.preferences.fontFamily;
+        if (req.body.preferences.colorScheme) config.colorScheme = req.body.preferences.colorScheme;
+        if (req.body.preferences.motion) config.motion = req.body.preferences.motion;
+        if (req.body.preferences.sound) config.sound = req.body.preferences.sound;
+      }
+
+      if (req.body.assistiveTechnologies) {
+        if (req.body.assistiveTechnologies.screenReader !== undefined) {
+          config.screenReader_enabled = req.body.assistiveTechnologies.screenReader.enabled;
+          config.screenReader_type = req.body.assistiveTechnologies.screenReader.type;
+        }
+        if (req.body.assistiveTechnologies.keyboardNavigation !== undefined) config.keyboardNavigation = req.body.assistiveTechnologies.keyboardNavigation;
+        if (req.body.assistiveTechnologies.focusManagement !== undefined) config.focusManagement = req.body.assistiveTechnologies.focusManagement;
+        if (req.body.assistiveTechnologies.skipLinks !== undefined) config.skipLinks = req.body.assistiveTechnologies.skipLinks;
+      }
+
+      if (req.body.contentAdaptations) {
+        if (req.body.contentAdaptations.simplifiedLanguage !== undefined) config.simplifiedLanguage = req.body.contentAdaptations.simplifiedLanguage;
+        if (req.body.contentAdaptations.largePrint !== undefined) config.largePrint = req.body.contentAdaptations.largePrint;
+        if (req.body.contentAdaptations.audioDescriptions !== undefined) config.audioDescriptions = req.body.contentAdaptations.audioDescriptions;
+        if (req.body.contentAdaptations.signLanguage !== undefined) config.signLanguage = req.body.contentAdaptations.signLanguage;
+      }
+
+      if (req.body.deviceSettings) {
+        if (req.body.deviceSettings.touchTargets) config.touchTargets = req.body.deviceSettings.touchTargets;
+        if (req.body.deviceSettings.gestureSupport !== undefined) config.gestureSupport = req.body.deviceSettings.gestureSupport;
+        if (req.body.deviceSettings.voiceCommands !== undefined) config.voiceCommands = req.body.deviceSettings.voiceCommands;
+      }
+
+      if (req.body.notifications) {
+        if (req.body.notifications.accessibilityAlerts !== undefined) config.accessibilityAlerts = req.body.notifications.accessibilityAlerts;
+        if (req.body.notifications.guidanceMessages !== undefined) config.guidanceMessages = req.body.notifications.guidanceMessages;
+        if (req.body.notifications.errorAnnouncements !== undefined) config.errorAnnouncements = req.body.notifications.errorAnnouncements;
+      }
 
       await config.save();
 
       // Verificar logro de accesibilidad
-      if (config.hasAdvancedSettings) {
+      if (config.getHasAdvancedSettings()) {
         await GamificationService.grantAchievement(req.userId, 'accessibility_advocate');
       }
 
@@ -301,18 +236,17 @@ class UsersController {
         accessibilityConfig: config
       });
     } catch (error) {
-      console.error('Error actualizando configuración de accesibilidad:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      next(error);
     }
   }
 
   // Resetear configuración de accesibilidad
-  async resetAccessibilityConfig(req, res) {
+  async resetAccessibilityConfig(req, res, next) {
     try {
-      let config = await AccessibilityConfig.findOne({ userId: req.userId });
+      let config = await AccessibilityConfig.findOne({ where: { userId: req.userId } });
 
       if (!config) {
-        config = new AccessibilityConfig({ userId: req.userId });
+        config = await AccessibilityConfig.create({ userId: req.userId });
       }
 
       await config.resetToDefault();
@@ -322,55 +256,67 @@ class UsersController {
         accessibilityConfig: config
       });
     } catch (error) {
-      console.error('Error reseteando configuración de accesibilidad:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      next(error);
     }
   }
 
   // Obtener datos de gamificación
-  async getGamificationData(req, res) {
+  async getGamificationData(req, res, next) {
     try {
-      const user = await User.findById(req.userId).select('gamification');
+      const user = await User.findByPk(req.userId, {
+        attributes: ['gamification_level', 'gamification_experience', 'gamification_achievements', 'gamification_streak_current', 'gamification_streak_longest', 'gamification_streak_lastActivity']
+      });
 
       if (!user) {
-        return res.status(404).json({ error: 'Usuario no encontrado' });
+        const notFoundError = new Error('Usuario no encontrado');
+        notFoundError.name = 'NotFoundError';
+        return next(notFoundError);
       }
 
       const achievements = await GamificationService.getUserAchievements(req.userId);
       const availableAchievements = GamificationService.getAvailableAchievements();
 
       res.json({
-        gamification: user.gamification,
+        gamification: {
+          level: user.gamification_level,
+          experience: user.gamification_experience,
+          achievements: user.gamification_achievements,
+          streak: {
+            current: user.gamification_streak_current,
+            longest: user.gamification_streak_longest,
+            lastActivity: user.gamification_streak_lastActivity
+          }
+        },
         achievements,
         availableAchievements
       });
     } catch (error) {
-      console.error('Error obteniendo datos de gamificación:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      next(error);
     }
   }
 
   // Obtener optimizaciones personalizadas
-  async getOptimizations(req, res) {
+  async getOptimizations(req, res, next) {
     try {
       const optimizations = await OptimizationService.getAllOptimizations(req.userId);
 
       res.json(optimizations);
     } catch (error) {
-      console.error('Error obteniendo optimizaciones:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      next(error);
     }
   }
 
   // Obtener estadísticas del usuario
-  async getUserStats(req, res) {
+  async getUserStats(req, res, next) {
     try {
-      const user = await User.findById(req.userId)
-        .select('gamification createdAt lastLogin')
-        .populate('profile.favoriteMembers', 'name');
+      const user = await User.findByPk(req.userId, {
+        attributes: ['gamification_level', 'gamification_experience', 'gamification_achievements', 'gamification_streak_current', 'gamification_streak_longest', 'createdAt', 'lastLogin', 'favoriteMembers']
+      });
 
       if (!user) {
-        return res.status(404).json({ error: 'Usuario no encontrado' });
+        const notFoundError = new Error('Usuario no encontrado');
+        notFoundError.name = 'NotFoundError';
+        return next(notFoundError);
       }
 
       const daysSinceRegistration = Math.floor(
@@ -379,29 +325,30 @@ class UsersController {
 
       res.json({
         stats: {
-          level: user.gamification.level,
-          experience: user.gamification.experience,
-          currentStreak: user.gamification.streak.current,
-          longestStreak: user.gamification.streak.longest,
-          achievementsCount: user.gamification.achievements.length,
-          favoriteMembersCount: user.profile.favoriteMembers?.length || 0,
+          level: user.gamification_level,
+          experience: user.gamification_experience,
+          currentStreak: user.gamification_streak_current,
+          longestStreak: user.gamification_streak_longest,
+          achievementsCount: user.gamification_achievements ? user.gamification_achievements.length : 0,
+          favoriteMembersCount: user.favoriteMembers ? user.favoriteMembers.length : 0,
           daysSinceRegistration,
           lastLogin: user.lastLogin
         }
       });
     } catch (error) {
-      console.error('Error obteniendo estadísticas:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      next(error);
     }
   }
 
   // Eliminar cuenta (soft delete)
-  async deleteAccount(req, res) {
+  async deleteAccount(req, res, next) {
     try {
-      const user = await User.findById(req.userId);
+      const user = await User.findByPk(req.userId);
 
       if (!user) {
-        return res.status(404).json({ error: 'Usuario no encontrado' });
+        const notFoundError = new Error('Usuario no encontrado');
+        notFoundError.name = 'NotFoundError';
+        return next(notFoundError);
       }
 
       user.isActive = false;
@@ -409,13 +356,12 @@ class UsersController {
 
       res.json({ message: 'Cuenta eliminada exitosamente' });
     } catch (error) {
-      console.error('Error eliminando cuenta:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      next(error);
     }
   }
 
   // Obtener leaderboard (solo para usuarios autenticados)
-  async getLeaderboard(req, res) {
+  async getLeaderboard(req, res, next) {
     try {
       const type = req.query.type || 'experience';
       const limit = parseInt(req.query.limit) || 10;
@@ -424,8 +370,7 @@ class UsersController {
 
       res.json({ leaderboard });
     } catch (error) {
-      console.error('Error obteniendo leaderboard:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      next(error);
     }
   }
 }

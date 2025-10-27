@@ -1,34 +1,34 @@
 const request = require('supertest');
-const mongoose = require('mongoose');
+const { sequelize } = require('../config/database');
 const app = require('../server');
 const Member = require('../models/Member');
 
 describe('MembersController', () => {
   beforeAll(async () => {
     // Conectar a base de datos de test
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/bts-test');
+    await sequelize.authenticate();
   });
 
   afterAll(async () => {
     // Limpiar y cerrar conexión
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
+    await sequelize.drop();
+    await sequelize.close();
   });
 
   beforeEach(async () => {
-    // Limpiar colección antes de cada test
-    await Member.deleteMany({});
+    // Limpiar tabla antes de cada test
+    await Member.destroy({ where: {}, truncate: true });
   });
 
   describe('GET /api/members', () => {
     it('debería retornar lista de miembros con paginación', async () => {
       // Crear miembros de prueba
       const membersData = [
-        { id: 1, name: 'RM', real_name: 'Kim Nam-joon', role: 'Leader, Rapper' },
-        { id: 2, name: 'Jin', real_name: 'Kim Seok-jin', role: 'Vocalist, Visual' }
+        { id: 1, name: 'RM', real_name: 'Kim Nam-joon', role: 'Leader, Rapper', biography_es: 'Bio RM', biography_en: 'RM Bio' },
+        { id: 2, name: 'Jin', real_name: 'Kim Seok-jin', role: 'Vocalist, Visual', biography_es: 'Bio Jin', biography_en: 'Jin Bio' }
       ];
 
-      await Member.insertMany(membersData);
+      await Member.bulkCreate(membersData);
 
       const response = await request(app)
         .get('/api/members')
@@ -40,9 +40,9 @@ describe('MembersController', () => {
     });
 
     it('debería filtrar miembros por rol', async () => {
-      await Member.insertMany([
-        { id: 1, name: 'RM', real_name: 'Kim Nam-joon', role: 'Leader, Rapper' },
-        { id: 2, name: 'Jin', real_name: 'Kim Seok-jin', role: 'Vocalist, Visual' }
+      await Member.bulkCreate([
+        { id: 1, name: 'RM', real_name: 'Kim Nam-joon', role: 'Leader, Rapper', biography_es: 'Bio RM', biography_en: 'RM Bio' },
+        { id: 2, name: 'Jin', real_name: 'Kim Seok-jin', role: 'Vocalist, Visual', biography_es: 'Bio Jin', biography_en: 'Jin Bio' }
       ]);
 
       const response = await request(app)
@@ -54,9 +54,9 @@ describe('MembersController', () => {
     });
 
     it('debería buscar miembros por nombre', async () => {
-      await Member.insertMany([
-        { id: 1, name: 'RM', real_name: 'Kim Nam-joon', role: 'Leader, Rapper' },
-        { id: 2, name: 'Jin', real_name: 'Kim Seok-jin', role: 'Vocalist, Visual' }
+      await Member.bulkCreate([
+        { id: 1, name: 'RM', real_name: 'Kim Nam-joon', role: 'Leader, Rapper', biography_es: 'Bio RM', biography_en: 'RM Bio' },
+        { id: 2, name: 'Jin', real_name: 'Kim Seok-jin', role: 'Vocalist, Visual', biography_es: 'Bio Jin', biography_en: 'Jin Bio' }
       ]);
 
       const response = await request(app)
@@ -75,7 +75,8 @@ describe('MembersController', () => {
         name: 'RM',
         real_name: 'Kim Nam-joon',
         role: 'Leader, Rapper',
-        biography: { es: 'Biografía de RM', en: 'RM biography' }
+        biography_es: 'Biografía de RM',
+        biography_en: 'RM biography'
       };
 
       await Member.create(memberData);
@@ -107,9 +108,9 @@ describe('MembersController', () => {
 
   describe('GET /api/members/popular', () => {
     it('debería retornar miembros populares', async () => {
-      await Member.insertMany([
-        { id: 1, name: 'RM', real_name: 'Kim Nam-joon', role: 'Leader, Rapper', stats: { followers: 100, likes: 50, views: 200 } },
-        { id: 2, name: 'Jin', real_name: 'Kim Seok-jin', role: 'Vocalist, Visual', stats: { followers: 80, likes: 60, views: 150 } }
+      await Member.bulkCreate([
+        { id: 1, name: 'RM', real_name: 'Kim Nam-joon', role: 'Leader, Rapper', biography_es: 'Bio RM', biography_en: 'RM Bio', followers: 100, likes: 50, views: 200 },
+        { id: 2, name: 'Jin', real_name: 'Kim Seok-jin', role: 'Vocalist, Visual', biography_es: 'Bio Jin', biography_en: 'Jin Bio', followers: 80, likes: 60, views: 150 }
       ]);
 
       const response = await request(app)
@@ -123,9 +124,9 @@ describe('MembersController', () => {
 
   describe('GET /api/members/stats', () => {
     it('debería retornar estadísticas generales', async () => {
-      await Member.insertMany([
-        { id: 1, name: 'RM', real_name: 'Kim Nam-joon', role: 'Leader, Rapper', stats: { followers: 100, likes: 50, views: 200 } },
-        { id: 2, name: 'Jin', real_name: 'Kim Seok-jin', role: 'Vocalist, Visual', stats: { followers: 80, likes: 60, views: 150 } }
+      await Member.bulkCreate([
+        { id: 1, name: 'RM', real_name: 'Kim Nam-joon', role: 'Leader, Rapper', biography_es: 'Bio RM', biography_en: 'RM Bio', followers: 100, likes: 50, views: 200 },
+        { id: 2, name: 'Jin', real_name: 'Kim Seok-jin', role: 'Vocalist, Visual', biography_es: 'Bio Jin', biography_en: 'Jin Bio', followers: 80, likes: 60, views: 150 }
       ]);
 
       const response = await request(app)

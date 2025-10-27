@@ -1,185 +1,197 @@
-const mongoose = require('mongoose');
+const { DataTypes, Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
+const { sequelize } = require('../config/database');
 
-const userSchema = new mongoose.Schema({
+const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
   username: {
-    type: String,
-    required: true,
+    type: DataTypes.STRING(50),
+    allowNull: false,
     unique: true,
-    trim: true,
-    minlength: 3,
-    maxlength: 50
+    validate: {
+      len: [3, 50],
+      notEmpty: true
+    }
   },
   email: {
-    type: String,
-    required: true,
+    type: DataTypes.STRING(255),
+    allowNull: false,
     unique: true,
-    trim: true,
-    lowercase: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+    validate: {
+      isEmail: true,
+      notEmpty: true
+    }
   },
   password: {
-    type: String,
-    required: true,
-    minlength: 6
+    type: DataTypes.STRING(255),
+    allowNull: false,
+    validate: {
+      len: [6, 255]
+    }
   },
   role: {
-    type: String,
-    enum: ['user', 'admin', 'moderator'],
-    default: 'user'
+    type: DataTypes.ENUM('user', 'admin', 'moderator'),
+    defaultValue: 'user'
   },
-  profile: {
-    firstName: String,
-    lastName: String,
-    avatar: String,
-    bio: {
-      type: String,
-      maxlength: 500
-    },
-    favoriteMembers: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Member'
-    }],
-    language: {
-      type: String,
-      enum: ['es', 'en'],
-      default: 'es'
+  firstName: {
+    type: DataTypes.STRING(100),
+    allowNull: true
+  },
+  lastName: {
+    type: DataTypes.STRING(100),
+    allowNull: true
+  },
+  avatar: {
+    type: DataTypes.STRING(500),
+    allowNull: true
+  },
+  bio: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    validate: {
+      len: [0, 500]
     }
   },
-  accessibility: {
-    fontSize: {
-      type: String,
-      enum: ['small', 'medium', 'large'],
-      default: 'medium'
-    },
-    highContrast: {
-      type: Boolean,
-      default: false
-    },
-    reducedMotion: {
-      type: Boolean,
-      default: false
-    },
-    screenReader: {
-      type: Boolean,
-      default: false
-    }
+  favoriteMembers: {
+    type: DataTypes.JSON,
+    defaultValue: []
   },
-  gamification: {
-    level: {
-      type: Number,
-      default: 1
-    },
-    experience: {
-      type: Number,
-      default: 0
-    },
-    achievements: [{
-      badgeId: String,
-      earnedAt: {
-        type: Date,
-        default: Date.now
-      },
-      progress: {
-        type: Number,
-        default: 100
-      }
-    }],
-    streak: {
-      current: {
-        type: Number,
-        default: 0
-      },
-      longest: {
-        type: Number,
-        default: 0
-      },
-      lastActivity: Date
-    }
+  language: {
+    type: DataTypes.ENUM('es', 'en'),
+    defaultValue: 'es'
   },
-  wearable: {
-    deviceType: {
-      type: String,
-      enum: ['smartwatch', 'fitness_tracker', 'smart_ring', 'none'],
-      default: 'none'
-    },
-    connected: {
-      type: Boolean,
-      default: false
-    },
-    lastSync: Date,
-    preferences: {
-      notifications: {
-        type: Boolean,
-        default: true
-      },
-      hapticFeedback: {
-        type: Boolean,
-        default: true
-      },
-      autoSync: {
-        type: Boolean,
-        default: true
-      }
-    }
+  fontSize: {
+    type: DataTypes.ENUM('small', 'medium', 'large'),
+    defaultValue: 'medium'
+  },
+  highContrast: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  reducedMotion: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  screenReader: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  gamification_level: {
+    type: DataTypes.INTEGER,
+    defaultValue: 1
+  },
+  gamification_experience: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  gamification_achievements: {
+    type: DataTypes.JSON,
+    defaultValue: []
+  },
+  gamification_streak_current: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  gamification_streak_longest: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  gamification_streak_lastActivity: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  wearable_deviceType: {
+    type: DataTypes.ENUM('smartwatch', 'fitness_tracker', 'smart_ring', 'none'),
+    defaultValue: 'none'
+  },
+  wearable_connected: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  wearable_lastSync: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  wearable_notifications: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  wearable_hapticFeedback: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  wearable_autoSync: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
   },
   isActive: {
-    type: Boolean,
-    default: true
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
   },
-  lastLogin: Date,
+  lastLogin: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
   loginAttempts: {
-    type: Number,
-    default: 0
+    type: DataTypes.INTEGER,
+    defaultValue: 0
   },
-  lockUntil: Date
+  lockUntil: {
+    type: DataTypes.DATE,
+    allowNull: true
+  }
 }, {
+  tableName: 'users',
   timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+  indexes: [
+    { fields: ['email'] },
+    { fields: ['username'] },
+    { fields: ['gamification_level'] },
+    { fields: ['gamification_experience'] }
+  ]
 });
-
-// Índices para optimización
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
-userSchema.index({ 'gamification.level': -1 });
-userSchema.index({ 'gamification.experience': -1 });
 
 // Virtual para nombre completo
-userSchema.virtual('fullName').get(function() {
-  if (this.profile.firstName && this.profile.lastName) {
-    return `${this.profile.firstName} ${this.profile.lastName}`;
+User.prototype.getFullName = function() {
+  if (this.firstName && this.lastName) {
+    return `${this.firstName} ${this.lastName}`;
   }
   return this.username;
-});
+};
 
 // Virtual para verificar si la cuenta está bloqueada
-userSchema.virtual('isLocked').get(function() {
-  return !!(this.lockUntil && this.lockUntil > Date.now());
+User.prototype.getIsLocked = function() {
+  return !!(this.lockUntil && this.lockUntil > new Date());
+};
+
+// Hook para hashear contraseña antes de guardar
+User.beforeCreate(async (user) => {
+  if (user.password) {
+    const salt = await bcrypt.genSalt(12);
+    user.password = await bcrypt.hash(user.password, salt);
+  }
 });
 
-// Middleware para hashear contraseña antes de guardar
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-
-  try {
+User.beforeUpdate(async (user) => {
+  if (user.changed('password')) {
     const salt = await bcrypt.genSalt(12);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
+    user.password = await bcrypt.hash(user.password, salt);
   }
 });
 
 // Método para comparar contraseñas
-userSchema.methods.comparePassword = async function(candidatePassword) {
+User.prototype.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
 // Método para incrementar intentos de login
-userSchema.methods.incLoginAttempts = function() {
+User.prototype.incLoginAttempts = function() {
   if (this.loginAttempts >= 5) {
-    this.lockUntil = Date.now() + 2 * 60 * 60 * 1000; // 2 horas
+    this.lockUntil = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 horas
   } else {
     this.loginAttempts += 1;
   }
@@ -187,21 +199,21 @@ userSchema.methods.incLoginAttempts = function() {
 };
 
 // Método para resetear intentos de login
-userSchema.methods.resetLoginAttempts = function() {
+User.prototype.resetLoginAttempts = function() {
   this.loginAttempts = 0;
-  this.lockUntil = undefined;
+  this.lockUntil = null;
   return this.save();
 };
 
 // Método para actualizar experiencia y nivel
-userSchema.methods.addExperience = function(points) {
-  this.gamification.experience += points;
+User.prototype.addExperience = function(points) {
+  this.gamification_experience += points;
 
   // Calcular nuevo nivel (cada 1000 puntos = 1 nivel)
-  const newLevel = Math.floor(this.gamification.experience / 1000) + 1;
+  const newLevel = Math.floor(this.gamification_experience / 1000) + 1;
 
-  if (newLevel > this.gamification.level) {
-    this.gamification.level = newLevel;
+  if (newLevel > this.gamification_level) {
+    this.gamification_level = newLevel;
     // Aquí se podría emitir un evento para notificaciones
   }
 
@@ -209,13 +221,15 @@ userSchema.methods.addExperience = function(points) {
 };
 
 // Método estático para encontrar usuario por email o username
-userSchema.statics.findByEmailOrUsername = function(identifier) {
+User.findByEmailOrUsername = function(identifier) {
   return this.findOne({
-    $or: [
-      { email: identifier.toLowerCase() },
-      { username: identifier }
-    ]
+    where: {
+      [Op.or]: [
+        { email: identifier.toLowerCase() },
+        { username: identifier }
+      ]
+    }
   });
 };
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = User;

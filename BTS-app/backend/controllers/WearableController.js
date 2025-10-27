@@ -2,35 +2,13 @@ const Joi = require('joi');
 const Wearable = require('../models/Wearable');
 const GamificationService = require('../services/GamificationService');
 const OptimizationService = require('../services/OptimizationService');
+const { validateWithJoi, wearableSchemas } = require('../middlewares/validation');
 
 class WearableController {
-  // Validación para conectar dispositivo
-  connectDeviceSchema = Joi.object({
-    device: Joi.object({
-      type: Joi.string().valid('smartwatch', 'fitness_tracker', 'smart_ring', 'smart_glasses', 'earbuds').required(),
-      brand: Joi.string().valid('apple', 'samsung', 'fitbit', 'garmin', 'xiaomi', 'huawei', 'other').required(),
-      model: Joi.string().trim().min(1).max(100).required(),
-      firmwareVersion: Joi.string().trim(),
-      serialNumber: Joi.string().trim()
-    }).required(),
-    settings: Joi.object({
-      units: Joi.string().valid('metric', 'imperial').default('metric'),
-      timezone: Joi.string().default('America/Mexico_City'),
-      language: Joi.string().valid('es', 'en').default('es')
-    })
-  });
-
   // Conectar dispositivo wearable
   async connectDevice(req, res) {
     try {
-      const { error, value } = this.connectDeviceSchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({
-          error: 'Datos del dispositivo inválidos',
-          details: error.details[0].message
-        });
-      }
-
+      // La validación ya se realizó en el middleware
       // Verificar si ya tiene un dispositivo conectado
       let wearable = await Wearable.findOne({ userId: req.userId });
 
@@ -43,12 +21,12 @@ class WearableController {
       // Crear nueva conexión
       wearable = new Wearable({
         userId: req.userId,
-        device: value.device,
+        device: req.body.device,
         connection: {
           isConnected: true,
           lastSync: new Date()
         },
-        settings: value.settings
+        settings: req.body.settings
       });
 
       await wearable.save();
@@ -123,37 +101,10 @@ class WearableController {
     }
   }
 
-  // Validación para sincronizar datos
-  syncDataSchema = Joi.object({
-    sensorData: Joi.object({
-      heartRate: Joi.number().integer().min(40).max(200),
-      steps: Joi.number().integer().min(0),
-      calories: Joi.number().integer().min(0),
-      sleep: Joi.object({
-        duration: Joi.number().min(0).max(24),
-        quality: Joi.number().min(0).max(100),
-        stages: Joi.object({
-          deep: Joi.number().min(0),
-          light: Joi.number().min(0),
-          rem: Joi.number().min(0),
-          awake: Joi.number().min(0)
-        })
-      }),
-      battery: Joi.number().min(0).max(100)
-    }).required()
-  });
-
   // Sincronizar datos del dispositivo
   async syncDeviceData(req, res) {
     try {
-      const { error, value } = this.syncDataSchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({
-          error: 'Datos de sensores inválidos',
-          details: error.details[0].message
-        });
-      }
-
+      // La validación ya se realizó en el middleware
       const wearable = await Wearable.findOne({ userId: req.userId });
 
       if (!wearable) {
@@ -165,7 +116,7 @@ class WearableController {
       }
 
       // Sincronizar datos
-      await wearable.syncData(value.sensorData);
+      await wearable.syncData(req.body.sensorData);
 
       // Verificar metas diarias y logros
       await wearable.checkDailyGoals();
@@ -190,45 +141,10 @@ class WearableController {
     }
   }
 
-  // Validación para actualizar configuración
-  updateSettingsSchema = Joi.object({
-    notifications: Joi.object({
-      enabled: Joi.boolean(),
-      types: Joi.object({
-        achievements: Joi.boolean(),
-        reminders: Joi.boolean(),
-        challenges: Joi.boolean(),
-        social: Joi.boolean()
-      }),
-      schedule: Joi.object({
-        quietHours: Joi.object({
-          start: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
-          end: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
-        }),
-        vibration: Joi.boolean(),
-        sound: Joi.boolean()
-      })
-    }),
-    gamification: Joi.object({
-      enabled: Joi.boolean(),
-      syncFrequency: Joi.string().valid('realtime', 'hourly', 'daily', 'manual')
-    }),
-    dataRetention: Joi.object({
-      keepDataDays: Joi.number().integer().min(30).max(3650)
-    })
-  });
-
   // Actualizar configuración del dispositivo
   async updateDeviceSettings(req, res) {
     try {
-      const { error, value } = this.updateSettingsSchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({
-          error: 'Configuración inválida',
-          details: error.details[0].message
-        });
-      }
-
+      // La validación ya se realizó en el middleware
       const wearable = await Wearable.findOne({ userId: req.userId });
 
       if (!wearable) {
@@ -236,16 +152,16 @@ class WearableController {
       }
 
       // Actualizar configuración
-      if (value.notifications) {
-        Object.assign(wearable.notifications, value.notifications);
+      if (req.body.notifications) {
+        Object.assign(wearable.notifications, req.body.notifications);
       }
 
-      if (value.gamification) {
-        Object.assign(wearable.gamification, value.gamification);
+      if (req.body.gamification) {
+        Object.assign(wearable.gamification, req.body.gamification);
       }
 
-      if (value.dataRetention) {
-        Object.assign(wearable.dataRetention, value.dataRetention);
+      if (req.body.dataRetention) {
+        Object.assign(wearable.dataRetention, req.body.dataRetention);
       }
 
       await wearable.save();

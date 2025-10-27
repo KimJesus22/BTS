@@ -1,9 +1,93 @@
 # API Documentation - BTS-app Backend
 
-Documentación completa de la API RESTful para BTS-app.
+Documentación completa de la API RESTful para BTS-app con validación robusta y sanitización de entradas.
+
+## 🛡️ Seguridad y Validación
+
+### Validación de Entradas
+La API implementa validación completa de todas las entradas usando **Joi** para esquemas robustos y **express-validator** para sanitización automática:
+
+- **Validación de tipos de datos**: Strings, números, booleanos, arrays, objetos
+- **Validación de formatos**: Emails, URLs, fechas, patrones regex
+- **Validación de rangos**: Longitudes mínimas/máximas, valores numéricos
+- **Sanitización XSS**: Escape automático de HTML y scripts maliciosos
+- **Prevención SQL/NoSQL injection**: Consultas parametrizadas y validación de entrada
+
+### Respuestas de Error de Validación
+```json
+{
+  "success": false,
+  "error": {
+    "message": "Datos de entrada inválidos",
+    "code": "VALIDATION_ERROR",
+    "details": [
+      {
+        "field": "email",
+        "message": "El email debe tener un formato válido",
+        "value": "invalid-email"
+      },
+      {
+        "field": "password",
+        "message": "La contraseña debe contener al menos una letra minúscula, una mayúscula, un número y un carácter especial"
+      }
+    ],
+    "timestamp": "2025-10-27T18:32:31.810Z"
+  }
+}
+```
+
+### Ejemplos de Validación por Endpoint
+
+#### Autenticación - Registro
+```javascript
+// ✅ Válido
+{
+  "username": "usuario_valido",
+  "email": "usuario@ejemplo.com",
+  "password": "Contraseña123!"
+}
+
+// ❌ Inválido - Error de validación
+{
+  "username": "us", // muy corto
+  "email": "email-invalido", // formato incorrecto
+  "password": "123" // no cumple patrón de seguridad
+}
+```
+
+#### Miembros - Búsqueda
+```javascript
+// ✅ Válido
+GET /api/members/search?q=jin
+
+// ❌ Inválido - Error de validación
+GET /api/members/search?q=a // término muy corto
+```
+
+#### Wearables - Conexión de Dispositivo
+```javascript
+// ✅ Válido
+{
+  "device": {
+    "type": "smartwatch",
+    "brand": "apple",
+    "model": "Watch Series 8"
+  }
+}
+
+// ❌ Inválido - Error de validación
+{
+  "device": {
+    "type": "invalid_type", // tipo no permitido
+    "brand": "unknown_brand", // marca no soportada
+    "model": "" // modelo vacío
+  }
+}
+```
 
 ## 📋 Tabla de Contenidos
 
+- [Seguridad y Validación](#seguridad-y-validación)
 - [Autenticación](#autenticación)
 - [Miembros](#miembros)
 - [Usuarios](#usuarios)
@@ -413,7 +497,7 @@ Content-Type: application/json
 
 ## ❌ Códigos de Error
 
-### Errores Comunes
+### Códigos de Error HTTP
 
 | Código | Descripción |
 |--------|-------------|
@@ -426,14 +510,55 @@ Content-Type: application/json
 | 429 | Demasiadas solicitudes (rate limit) |
 | 500 | Error interno del servidor |
 
+### Formato de Respuesta de Error Estandarizado
+
+Todas las respuestas de error siguen la estructura consistente:
+
+```json
+{
+  "success": false,
+  "error": {
+    "message": "Descripción del error",
+    "code": "CÓDIGO_DEL_ERROR",
+    "details": "Información adicional (opcional)",
+    "timestamp": "2025-10-27T18:45:50.462Z"
+  }
+}
+```
+
+**Campos de la respuesta de error:**
+- `success`: Siempre `false` para errores
+- `error.message`: Mensaje descriptivo del error
+- `error.code`: Código de error específico para identificación programática
+- `error.details`: Detalles adicionales del error (opcional, puede ser string o array)
+- `error.timestamp`: Timestamp ISO del momento del error
+
 ### Ejemplo de Error
 
 ```json
 {
-  "error": "Credenciales inválidas",
-  "timestamp": "2024-01-20T10:00:00.000Z"
+  "success": false,
+  "error": {
+    "message": "Credenciales inválidas",
+    "code": "INVALID_CREDENTIALS",
+    "timestamp": "2024-01-20T10:00:00.000Z"
+  }
 }
 ```
+
+### Códigos de Error Específicos
+
+| Código | Descripción | Estado HTTP |
+|--------|-------------|-------------|
+| `VALIDATION_ERROR` | Datos de entrada inválidos (Joi/express-validator) | 400 |
+| `INVALID_TOKEN` | Token de autenticación inválido | 401 |
+| `TOKEN_EXPIRED` | Token de autenticación expirado | 401 |
+| `FORBIDDEN` | Acceso prohibido (permisos insuficientes) | 403 |
+| `NOT_FOUND` | Recurso no encontrado | 404 |
+| `INVALID_ID` | ID inválido en base de datos | 400 |
+| `DUPLICATE_KEY` | Recurso ya existe (clave duplicada) | 409 |
+| `RATE_LIMIT_EXCEEDED` | Demasiadas solicitudes | 429 |
+| `INTERNAL_ERROR` | Error interno del servidor | 500 |
 
 ## 📝 Ejemplos de Uso
 
@@ -484,8 +609,26 @@ await fetch('/api/users/profile', {
 try {
   const response = await fetch('/api/members/999');
   if (!response.ok) {
-    const error = await response.json();
-    console.error('Error:', error.error);
+    const errorData = await response.json();
+    console.error('Error:', errorData.error.message);
+    console.error('Código:', errorData.error.code);
+
+    // Manejo específico por código de error
+    switch (errorData.error.code) {
+      case 'NOT_FOUND':
+        // Mostrar mensaje de "recurso no encontrado"
+        break;
+      case 'VALIDATION_ERROR':
+        // Mostrar errores de validación
+        console.error('Detalles:', errorData.error.details);
+        break;
+      case 'RATE_LIMIT_EXCEEDED':
+        // Mostrar mensaje de límite de tasa
+        break;
+      default:
+        // Manejo genérico
+        break;
+    }
   }
 } catch (error) {
   console.error('Network error:', error);
@@ -518,11 +661,15 @@ const authHeaders = {
 
 ## 🔒 Seguridad
 
-- Todos los passwords son hasheados con bcrypt
-- JWT tokens expiran en 7 días por defecto
-- CORS configurado para orígenes específicos
-- Inputs sanitizados para prevenir XSS
-- Rate limiting para prevenir ataques de fuerza bruta
+- **Validación de Entradas**: Joi schemas para validación robusta de todos los inputs
+- **Sanitización XSS**: express-validator para escape automático de HTML/scripts
+- **Prevención SQL/NoSQL Injection**: Consultas parametrizadas y validación de entrada
+- **Hashing de Passwords**: bcrypt con salt rounds configurables
+- **JWT Tokens**: Expiran en 7 días por defecto con refresh tokens opcionales
+- **CORS**: Configurado para orígenes específicos con credenciales
+- **Rate Limiting**: Protección contra ataques de fuerza bruta y abuso
+- **Brute Force Protection**: Bloqueo temporal de cuentas tras intentos fallidos
+- **Headers de Seguridad**: Configuración automática de security headers
 
 ---
 
