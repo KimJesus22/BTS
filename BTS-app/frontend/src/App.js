@@ -1,5 +1,5 @@
 // Importar las dependencias de React y React Router
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,10 +14,18 @@ import { useOnboarding } from './hooks/useOnboarding';
 // Importar configuración de internacionalización
 import './i18n';
 
-// Importar las páginas de la aplicación
-import PaginaPrincipal from './pages/PaginaPrincipal'; // Anteriormente HomePage
-import PaginaDetalleMiembro from './pages/PaginaDetalleMiembro'; // Anteriormente MemberDetailPage
-import PrivacyPage from './pages/PrivacyPage'; // Página de privacidad
+// Importar páginas con carga perezosa (code splitting)
+const PaginaPrincipal = lazy(() => import('./pages/PaginaPrincipal'));
+const PaginaDetalleMiembro = lazy(() => import('./pages/PaginaDetalleMiembro'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+
+// Importar componentes con carga perezosa
+const OfflineIndicator = lazy(() => import('./components/OfflineIndicator'));
+const InstallPrompt = lazy(() => import('./components/InstallPrompt'));
+const SyncStatus = lazy(() => import('./components/SyncStatus'));
+const OnboardingModal = lazy(() => import('./components/OnboardingModal'));
+const SearchBar = lazy(() => import('./components/SearchBar'));
+const AccessibilityToggle = lazy(() => import('./components/AccessibilityToggle'));
 
 // Importar el contexto de accesibilidad
 import { AccessibilityProvider } from './contexts/AccessibilityContext';
@@ -33,20 +41,6 @@ import { GamificationProvider } from './contexts/GamificationContext';
 
 // Importar el contexto de onboarding
 import { OnboardingProvider } from './contexts/OnboardingContext';
-
-// Importar componentes PWA
-import OfflineIndicator from './components/OfflineIndicator';
-import InstallPrompt from './components/InstallPrompt';
-import SyncStatus from './components/SyncStatus';
-
-// Importar componente de onboarding
-import OnboardingModal from './components/OnboardingModal';
-
-// Importar SearchBar para mostrar durante onboarding
-import SearchBar from './components/SearchBar';
-
-// Importar AccessibilityToggle
-import AccessibilityToggle from './components/AccessibilityToggle';
 
 // Importar los estilos globales de la aplicación
 import './App.css';
@@ -117,17 +111,26 @@ function AppContent() {
 
   return (
     <div className="App">
-      {/* Indicador de estado offline optimizado */}
-      <OfflineIndicator />
+      {/* Componentes con carga perezosa y Suspense */}
+      <Suspense fallback={<div className="loading-spinner" />}>
+        {/* Indicador de estado offline optimizado */}
+        <OfflineIndicator />
+      </Suspense>
 
-      {/* Prompt de instalación PWA optimizado */}
-      <InstallPrompt />
+      <Suspense fallback={<div className="loading-spinner" />}>
+        {/* Prompt de instalación PWA optimizado */}
+        <InstallPrompt />
+      </Suspense>
 
-      {/* Estado de sincronización optimizado */}
-      <SyncStatus />
+      <Suspense fallback={<div className="loading-spinner" />}>
+        {/* Estado de sincronización optimizado */}
+        <SyncStatus />
+      </Suspense>
 
-      {/* Modal de onboarding */}
-      <OnboardingModal />
+      <Suspense fallback={<div className="loading-spinner" />}>
+        {/* Modal de onboarding */}
+        <OnboardingModal />
+      </Suspense>
 
       {/* Skip links para navegación por teclado */}
       <a href="#main-content" className="skip-link">
@@ -137,46 +140,50 @@ function AppContent() {
         {t('accessibility.skipToAccessibility', 'Saltar a controles de accesibilidad')}
       </a>
 
-      {/* Botón flotante de accesibilidad */}
-      <AccessibilityToggle />
+      <Suspense fallback={<div className="loading-spinner" />}>
+        {/* Botón flotante de accesibilidad */}
+        <AccessibilityToggle />
+      </Suspense>
 
       {/* Barra de búsqueda durante onboarding - mostrar solo en paso SEARCH_FEATURE */}
       {onboardingActive && getCurrentStepData().id === 'search_feature' && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 2000,
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            padding: '20px',
-            borderRadius: '12px',
-            maxWidth: '90vw',
-            width: '400px'
-          }}
-          role="dialog"
-          aria-labelledby="search-demo-title"
-          aria-describedby="search-demo-description"
-        >
-          <h3 id="search-demo-title" style={{ color: 'white', marginBottom: '10px' }}>
-            {t('onboarding.search.title')}
-          </h3>
-          <p id="search-demo-description" style={{ color: 'white', marginBottom: '15px', fontSize: '14px' }}>
-            {t('onboarding.search.description')}
-          </p>
-          <SearchBar
-            placeholder={t('search.placeholder')}
-            onChange={() => {}} // No-op durante demo
-            onSearch={() => {}} // No-op durante demo
-            style={{ width: '100%' }}
-          />
-        </div>
+        <Suspense fallback={<div className="search-loading" />}>
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 2000,
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: '20px',
+              borderRadius: '12px',
+              maxWidth: '90vw',
+              width: '400px'
+            }}
+            role="dialog"
+            aria-labelledby="search-demo-title"
+            aria-describedby="search-demo-description"
+          >
+            <h3 id="search-demo-title" style={{ color: 'white', marginBottom: '10px' }}>
+              {t('onboarding.search.title')}
+            </h3>
+            <p id="search-demo-description" style={{ color: 'white', marginBottom: '15px', fontSize: '14px' }}>
+              {t('onboarding.search.description')}
+            </p>
+            <SearchBar
+              placeholder={t('search.placeholder')}
+              onChange={() => {}} // No-op durante demo
+              onSearch={() => {}} // No-op durante demo
+              style={{ width: '100%' }}
+            />
+          </div>
+        </Suspense>
       )}
 
       {/* Contenido principal de la aplicación con layout adaptativo */}
       <main id="main-content" className="container pt-4" role="main">
-        {/* Definición de las rutas de la aplicación con animaciones optimizadas */}
+        {/* Definición de las rutas de la aplicación con animaciones optimizadas y code splitting */}
         <AnimatePresence mode="wait" custom={reducedAnimations}>
           <Routes location={location} key={location.pathname}>
             {/* Ruta para la página principal */}
@@ -193,7 +200,9 @@ function AppContent() {
                     willChange: reducedAnimations ? 'auto' : 'transform, opacity'
                   }}
                 >
-                  <PaginaPrincipal />
+                  <Suspense fallback={<div className="page-loading-spinner" />}>
+                    <PaginaPrincipal />
+                  </Suspense>
                 </motion.div>
               }
             />
@@ -211,7 +220,9 @@ function AppContent() {
                     willChange: reducedAnimations ? 'auto' : 'transform, opacity'
                   }}
                 >
-                  <PaginaDetalleMiembro />
+                  <Suspense fallback={<div className="page-loading-spinner" />}>
+                    <PaginaDetalleMiembro />
+                  </Suspense>
                 </motion.div>
               }
             />
@@ -229,7 +240,9 @@ function AppContent() {
                     willChange: reducedAnimations ? 'auto' : 'transform, opacity'
                   }}
                 >
-                  <PrivacyPage />
+                  <Suspense fallback={<div className="page-loading-spinner" />}>
+                    <PrivacyPage />
+                  </Suspense>
                 </motion.div>
               }
             />

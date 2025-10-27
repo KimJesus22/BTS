@@ -1,4 +1,105 @@
 /* Estilos globales optimizados para PWA */
+
+/* Loading spinners para carga perezosa */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.loading-spinner::after {
+  content: '';
+  width: 24px;
+  height: 24px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.page-loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.page-loading-spinner::after {
+  content: '';
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.search-loading {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Placeholders para carga perezosa */
+.card-loading-placeholder {
+  height: 200px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+@keyframes loading-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Estilos para virtualización de listas */
+.virtualized-list-container {
+  width: 100%;
+  padding: 1rem 0;
+}
+
+.virtualized-list-container [role="list"] {
+  /* Reset para react-window */
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Ajustes de accesibilidad para listas virtualizadas */
+.virtualized-list-container .card {
+  margin-bottom: 1rem;
+}
+
+/* Scrollbar personalizado para listas virtualizadas */
+.virtualized-list-container ::-webkit-scrollbar {
+  width: 8px;
+}
+
+.virtualized-list-container ::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.virtualized-list-container ::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.virtualized-list-container ::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
 * {
   box-sizing: border-box;
 }

@@ -1,14 +1,19 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import TarjetaMiembro from '../components/TarjetaMiembro';
-import SwipeableCard from '../components/SwipeableCard';
-import AccessibilityControls from '../components/AccessibilityControls';
-import ThemeToggle from '../components/ThemeToggle';
-import SeccionRecomendaciones from '../components/SeccionRecomendaciones';
-import SearchBar from '../components/SearchBar';
+import { List } from 'react-window';
+
+// Componentes con carga perezosa
+const TarjetaMiembro = lazy(() => import('../components/TarjetaMiembro'));
+const SwipeableCard = lazy(() => import('../components/SwipeableCard'));
+const AccessibilityControls = lazy(() => import('../components/AccessibilityControls'));
+const ThemeToggle = lazy(() => import('../components/ThemeToggle'));
+const SeccionRecomendaciones = lazy(() => import('../components/SeccionRecomendaciones'));
+const SearchBar = lazy(() => import('../components/SearchBar'));
+
+// Hooks y contextos
 import { useAccessibility } from '../contexts/AccessibilityContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
 import useSpeechRecognition from '../hooks/useSpeechRecognition';
@@ -265,22 +270,17 @@ const PaginaPrincipal = () => {
 
   // --- Lógica de Renderizado ---
 
-  // Renderiza el contenido principal (loader, error, resultados o mensaje de no encontrado)
-  const renderizarContenido = () => {
-    if (cargando) {
-      return <div className="feedback-container"><div className="loader"></div></div>;
-    }
-    if (error) {
-      return <div className="feedback-container"><p className="error-message">{error}</p></div>;
-    }
-    if (miembrosFiltrados.length === 0 && terminoBusqueda) {
-      return <div className="feedback-container"><p>{t('home.noResults')}</p></div>;
-    }
+  // Configuración de virtualización
+  const VIRTUALIZATION_THRESHOLD = 50; // Umbral para activar virtualización
+  const ITEM_HEIGHT = 250; // Altura estimada de cada elemento
+
+  // Componente para renderizar cada elemento en la lista virtualizada
+  const MiembroVirtualizado = useCallback(({ index, style }) => {
+    const miembro = miembrosFiltrados[index];
     return (
-      <div className="row" role="list" aria-label={t('home.membersList', { count: miembrosFiltrados.length })}>
-        {miembrosFiltrados.map((miembro, index) => (
+      <div style={style}>
+        <Suspense fallback={<div className="card-loading-placeholder" />}>
           <SwipeableCard
-            key={miembro.id}
             title={miembro.name}
             subtitle={miembro.role}
             itemId={miembro.id}
@@ -293,12 +293,75 @@ const PaginaPrincipal = () => {
               miembro={miembro}
               esFavorito={favoritos.includes(miembro.id)}
               onToggleFavorito={manejarCambioFavorito}
-              esVisitado={visitados.includes(String(miembro.id))} // Asegurar que la comparación sea correcta
+              esVisitado={visitados.includes(String(miembro.id))}
               estaEnfocado={index === indiceFoco}
               onKeyDown={(e) => manejarActivacionTeclado(e, miembro.id)}
               index={index}
             />
           </SwipeableCard>
+        </Suspense>
+      </div>
+    );
+  }, [miembrosFiltrados, favoritos, visitados, indiceFoco, manejarSwipeFavorito, manejarSwipeEliminar, manejarCambioFavorito, manejarActivacionTeclado]);
+
+  // Renderiza el contenido principal (loader, error, resultados o mensaje de no encontrado)
+  const renderizarContenido = () => {
+    if (cargando) {
+      return <div className="feedback-container"><div className="loader"></div></div>;
+    }
+    if (error) {
+      return <div className="feedback-container"><p className="error-message">{error}</p></div>;
+    }
+    if (miembrosFiltrados.length === 0 && terminoBusqueda) {
+      return <div className="feedback-container"><p>{t('home.noResults')}</p></div>;
+    }
+
+    // Usar virtualización para listas grandes
+    if (miembrosFiltrados.length > VIRTUALIZATION_THRESHOLD) {
+      return (
+        <div
+          className="virtualized-list-container"
+          role="list"
+          aria-label={t('home.membersList', { count: miembrosFiltrados.length })}
+        >
+          <List
+            height={600} // Altura del contenedor visible
+            itemCount={miembrosFiltrados.length}
+            itemSize={ITEM_HEIGHT}
+            width="100%"
+            overscanCount={5} // Elementos adicionales para renderizar
+          >
+            {MiembroVirtualizado}
+          </List>
+        </div>
+      );
+    }
+
+    // Renderizado normal para listas pequeñas
+    return (
+      <div className="row" role="list" aria-label={t('home.membersList', { count: miembrosFiltrados.length })}>
+        {miembrosFiltrados.map((miembro, index) => (
+          <Suspense key={miembro.id} fallback={<div className="card-loading-placeholder" />}>
+            <SwipeableCard
+              title={miembro.name}
+              subtitle={miembro.role}
+              itemId={miembro.id}
+              onFavorite={manejarSwipeFavorito}
+              onDelete={manejarSwipeEliminar}
+              gamificationEnabled={true}
+              style={{ marginBottom: DESIGN_TOKENS.spacing[4] }}
+            >
+              <TarjetaMiembro
+                miembro={miembro}
+                esFavorito={favoritos.includes(miembro.id)}
+                onToggleFavorito={manejarCambioFavorito}
+                esVisitado={visitados.includes(String(miembro.id))}
+                estaEnfocado={index === indiceFoco}
+                onKeyDown={(e) => manejarActivacionTeclado(e, miembro.id)}
+                index={index}
+              />
+            </SwipeableCard>
+          </Suspense>
         ))}
       </div>
     );
