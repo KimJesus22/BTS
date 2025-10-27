@@ -1,0 +1,97 @@
+{
+  "app": {
+    "title": "Miembros de BTS",
+    "footer": "BTS"
+  },
+  "navigation": {
+    "backToList": "← Volver a la lista",
+    "viewDetails": "Ver detalles de {{name}}"
+  },
+  "search": {
+    "placeholder": "Buscar por nombre o rol...",
+    "description": "Buscar miembros de BTS por nombre o rol",
+    "noResults": "No se encontraron miembros que coincidan con la búsqueda."
+  },
+  "voice": {
+    "startListening": "Buscar por voz",
+    "stopListening": "Detener escucha",
+    "permissionDenied": "Permiso de micrófono denegado",
+    "recognitionError": "Error en reconocimiento de voz",
+    "startError": "Error al iniciar búsqueda por voz",
+    "notSupported": "Búsqueda por voz no soportada en este navegador",
+    "noSpeech": "No se detectó habla",
+    "networkError": "Error de red"
+  },
+  "filters": {
+    "favorites": "★ Solo Favoritos",
+    "showAll": "Mostrar todos los miembros",
+    "showFavorites": "Mostrar solo miembros favoritos"
+  },
+  "progress": {
+    "explored": "Has explorado {{count}} de {{total}} perfiles.",
+    "explored_one": "Has explorado {{count}} de {{total}} perfil.",
+    "explored_other": "Has explorado {{count}} de {{total}} perfiles."
+  },
+  "member": {
+    "name": "Nombre",
+    "realName": "Nombre real",
+    "role": "Rol",
+    "details": "Detalles del miembro",
+    "addToFavorites": "Añadir {{name}} a favoritos",
+    "removeFromFavorites": "Quitar {{name}} de favoritos",
+    "profileVisited": "Perfil visitado",
+    "biography": "Biografía",
+    "backToList": "← Volver a la lista"
+  },
+  "accessibility": {
+    "title": "Accesibilidad",
+    "fontSize": "Tamaño de fuente: {{size}}px",
+    "fontSizeLabel": "Tamaño de fuente",
+    "fontSizeDescription": "Ajusta el tamaño de fuente entre 12 y 24 píxeles",
+    "fontSizeSmall": "A-",
+    "fontSizeNormal": "A",
+    "fontSizeLarge": "A+",
+    "fontSizeExtraLarge": "A++",
+    "colorPalette": "Paleta de colores:",
+    "colorPaletteNormal": "Normal",
+    "colorPaletteDeuteranopia": "Deuteranopia",
+    "colorPaletteProtanopia": "Protanopia",
+    "colorPaletteTritanopia": "Tritanopia",
+    "language": "Idioma:",
+    "languageSpanish": "Español",
+    "languageEnglish": "English",
+    "voicePlay": "Escuchar biografía",
+    "voiceStop": "Detener narración"
+  },
+  "errors": {
+    "loading": "Cargando...",
+    "networkError": "La respuesta de la red no fue satisfactoria.",
+    "memberNotFound": "Miembro no encontrado.",
+    "loadError": "No se pudieron cargar los miembros. Por favor, inténtalo de nuevo más tarde."
+  },
+  "voice": {
+    "play": "Escuchar",
+    "stop": "Detener",
+    "startListening": "Buscar por voz",
+    "stopListening": "Detener escucha",
+    "notSupported": "Búsqueda por voz no soportada en este navegador",
+    "permissionDenied": "Permiso de micrófono denegado",
+    "noSpeech": "No se detectó habla",
+    "networkError": "Error de red",
+    "recognitionError": "Error en reconocimiento de voz",
+    "startError": "Error al iniciar búsqueda por voz"
+  },
+  "aria": {
+    "memberList": "Lista de {{count}} miembros",
+    "memberList_one": "Lista de {{count}} miembro",
+    "memberList_other": "Lista de {{count}} miembros",
+    "memberCard": "Tarjeta de miembro {{name}}",
+    "favoriteButton": "Botón de favorito",
+    "searchBox": "Buscar miembros",
+    "filtersRegion": "Controles de filtros",
+    "accessibilityRegion": "Controles de accesibilidad",
+    "mainContent": "Contenido principal",
+    "navigation": "Navegación principal de la aplicación BTS",
+    "appContent": "Lista de miembros de BTS"
+  }
+}

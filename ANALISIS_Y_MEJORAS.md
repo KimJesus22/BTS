@@ -61,3 +61,27 @@ Para asegurar la calidad y mantenibilidad a largo plazo, es fundamental incorpor
 - **Logs estructurados**: Usando librerías como `winston`, `pino` o `morgan` para registrar eventos importantes, errores y solicitudes, facilitando la depuración y monitorización.
 - **Pruebas automatizadas**: Escribir pruebas unitarias y de integración (con herramientas como **Jest** y **Supertest**) para validar el comportamiento de la API y prevenir regresiones.
 - **Documentación de la API**: Generar documentación clara y automática con herramientas como **Swagger** u OpenAPI para facilitar el consumo de la API por parte de otros desarrolladores o equipos.
+
+---
+
+## Implementaciones y Correcciones Realizadas
+
+### 1. Creación de la Estructura Inicial del Proyecto
+Se ha establecido la estructura base del proyecto, dividida en dos directorios principales:
+- **`backend/`**: Contiene un servidor simple de Node.js con Express para servir los datos de los miembros desde un archivo `db.json`.
+- **`frontend/`**: Una aplicación de React (`create-react-app`) que consumirá los datos del backend.
+
+### 2. Desarrollo de Componentes y Páginas en React
+Se han creado los componentes fundamentales para la interfaz de usuario:
+- **`HomePage.js`**: Página principal que muestra una lista de todos los miembros.
+- **`MemberCard.js`**: Tarjeta individual para mostrar la información básica de un miembro en la `HomePage`.
+- **`MemberDetailPage.js`**: Página de detalle que muestra información ampliada de un miembro seleccionado.
+
+### 3. Implementación de Enrutamiento
+Se ha configurado `react-router-dom` para gestionar la navegación dentro de la aplicación, permitiendo al usuario moverse entre la lista de miembros y la página de detalle de cada uno.
+
+### 4. Corrección de Dependencias del Frontend
+Durante el desarrollo, se identificó y solucionó un problema crítico que impedía el arranque de la aplicación de React.
+- **Problema**: El comando `npm audit fix --force` había modificado el archivo `package.json`, estableciendo la versión de `react-scripts` a `0.0.0`, lo que rompía el script de inicio.
+- **Solución**: Se restauró la versión correcta de `react-scripts` en `package.json` y se reinstalaron las dependencias, solucionando el problema.
+- **Dependencia Faltante**: Se instaló `react-router-dom`, que era necesario para el enrutamiento y causaba errores de compilación.

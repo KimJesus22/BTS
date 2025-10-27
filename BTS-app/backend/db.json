@@ -5,43 +5,71 @@
       "id": 1,
       "name": "RM",
       "real_name": "Kim Nam-joon",
-      "role": "Leader, Rapper"
+      "role": "Leader, Rapper",
+      "biography": {
+        "es": "Kim Nam-joon, conocido como RM, es el líder del grupo BTS. Nacido el 12 de septiembre de 1994 en Ilsan, Corea del Sur. Es un rapero talentoso y productor musical que ha contribuido significativamente al éxito global del grupo.",
+        "en": "Kim Nam-joon, known as RM, is the leader of the BTS group. Born on September 12, 1994 in Ilsan, South Korea. He is a talented rapper and music producer who has significantly contributed to the global success of the group."
+      }
     },
     {
       "id": 2,
       "name": "Jin",
       "real_name": "Kim Seok-jin",
-      "role": "Vocalist, Visual"
+      "role": "Vocalist, Visual",
+      "biography": {
+        "es": "Kim Seok-jin, conocido como Jin, es el vocalista y visual de BTS. Nacido el 4 de diciembre de 1992 en Gwacheon, Corea del Sur. Es conocido por su sentido del humor y su amor por la cocina.",
+        "en": "Kim Seok-jin, known as Jin, is BTS's vocalist and visual. Born on December 4, 1992 in Gwacheon, South Korea. He is known for his sense of humor and his love for cooking."
+      }
     },
     {
       "id": 3,
       "name": "Suga",
       "real_name": "Min Yoon-gi",
-      "role": "Rapper"
+      "role": "Rapper",
+      "biography": {
+        "es": "Min Yoon-gi, conocido como Suga, es el rapero principal de BTS. Nacido el 9 de marzo de 1993 en Daegu, Corea del Sur. Es un compositor prolífico y ha escrito muchas de las canciones exitosas del grupo.",
+        "en": "Min Yoon-gi, known as Suga, is BTS's lead rapper. Born on March 9, 1993 in Daegu, South Korea. He is a prolific songwriter and has written many of the group's hit songs."
+      }
     },
     {
       "id": 4,
       "name": "J-Hope",
       "real_name": "Jung Ho-seok",
-      "role": "Dancer, Rapper"
+      "role": "Dancer, Rapper",
+      "biography": {
+        "es": "Jung Ho-seok, conocido como J-Hope, es el bailarín principal y rapero de BTS. Nacido el 18 de febrero de 1994 en Gwangju, Corea del Sur. Es conocido por sus coreografías innovadoras y su energía positiva.",
+        "en": "Jung Ho-seok, known as J-Hope, is BTS's main dancer and rapper. Born on February 18, 1994 in Gwangju, South Korea. He is known for his innovative choreography and positive energy."
+      }
     },
     {
       "id": 5,
       "name": "Jimin",
       "real_name": "Park Ji-min",
-      "role": "Dancer, Vocalist"
+      "role": "Dancer, Vocalist",
+      "biography": {
+        "es": "Park Ji-min, conocido como Jimin, es el bailarín principal y vocalista de BTS. Nacido el 13 de octubre de 1995 en Busan, Corea del Sur. Es reconocido por sus poderosas actuaciones en el escenario y su voz emotiva.",
+        "en": "Park Ji-min, known as Jimin, is BTS's main dancer and vocalist. Born on October 13, 1995 in Busan, South Korea. He is recognized for his powerful stage performances and emotional voice."
+      }
     },
     {
       "id": 6,
       "name": "V",
       "real_name": "Kim Tae-hyung",
-      "role": "Vocalist, Dancer"
+      "role": "Vocalist, Dancer",
+      "biography": {
+        "es": "Kim Tae-hyung, conocido como V, es el vocalista y bailarín de BTS. Nacido el 30 de diciembre de 1995 en Daegu, Corea del Sur. Es conocido por su voz profunda y su personalidad carismática.",
+        "en": "Kim Tae-hyung, known as V, is BTS's vocalist and dancer. Born on December 30, 1995 in Daegu, South Korea. He is known for his deep voice and charismatic personality."
+      }
     },
     {
       "id": 7,
       "name": "Jungkook",
       "real_name": "Jeon Jung-kook",
-      "role": "Main Vocalist, Dancer, Center"
+      "role": "Main Vocalist, Dancer, Center",
+      "biography": {
+        "es": "Jeon Jung-kook, conocido como Jungkook, es el vocalista principal, bailarín y centro de BTS. Nacido el 1 de septiembre de 1997 en Busan, Corea del Sur. Es el maknae del grupo y conocido por su versatilidad musical.",
+        "en": "Jeon Jung-kook, known as Jungkook, is BTS's main vocalist, dancer, and center. Born on September 1, 1997 in Busan, South Korea. He is the group's maknae and known for his musical versatility."
+      }
     }
   ]
 }

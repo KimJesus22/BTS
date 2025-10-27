@@ -1,0 +1,97 @@
+{
+  "app": {
+    "title": "BTS Members",
+    "footer": "BTS"
+  },
+  "navigation": {
+    "backToList": "← Back to list",
+    "viewDetails": "View details of {{name}}"
+  },
+  "search": {
+    "placeholder": "Search by name or role...",
+    "description": "Search BTS members by name or role",
+    "noResults": "No members found matching your search."
+  },
+  "voice": {
+    "startListening": "Voice search",
+    "stopListening": "Stop listening",
+    "permissionDenied": "Microphone permission denied",
+    "recognitionError": "Voice recognition error",
+    "startError": "Error starting voice search",
+    "notSupported": "Voice search not supported in this browser",
+    "noSpeech": "No speech detected",
+    "networkError": "Network error"
+  },
+  "filters": {
+    "favorites": "★ Favorites Only",
+    "showAll": "Show all members",
+    "showFavorites": "Show favorite members only"
+  },
+  "progress": {
+    "explored": "You have explored {{count}} of {{total}} profiles.",
+    "explored_one": "You have explored {{count}} of {{total}} profile.",
+    "explored_other": "You have explored {{count}} of {{total}} profiles."
+  },
+  "member": {
+    "name": "Name",
+    "realName": "Real Name",
+    "role": "Role",
+    "details": "Member details",
+    "addToFavorites": "Add {{name}} to favorites",
+    "removeFromFavorites": "Remove {{name}} from favorites",
+    "profileVisited": "Profile visited",
+    "biography": "Biography",
+    "backToList": "← Back to list"
+  },
+  "accessibility": {
+    "title": "Accessibility",
+    "fontSize": "Font size: {{size}}px",
+    "fontSizeLabel": "Font size",
+    "fontSizeDescription": "Adjust font size between 12 and 24 pixels",
+    "fontSizeSmall": "A-",
+    "fontSizeNormal": "A",
+    "fontSizeLarge": "A+",
+    "fontSizeExtraLarge": "A++",
+    "colorPalette": "Color palette:",
+    "colorPaletteNormal": "Normal",
+    "colorPaletteDeuteranopia": "Deuteranopia",
+    "colorPaletteProtanopia": "Protanopia",
+    "colorPaletteTritanopia": "Tritanopia",
+    "language": "Language:",
+    "languageSpanish": "Español",
+    "languageEnglish": "English",
+    "voicePlay": "Listen to biography",
+    "voiceStop": "Stop narration"
+  },
+  "errors": {
+    "loading": "Loading...",
+    "networkError": "Network response was not satisfactory.",
+    "memberNotFound": "Member not found.",
+    "loadError": "Could not load members. Please try again later."
+  },
+  "voice": {
+    "play": "Listen",
+    "stop": "Stop",
+    "startListening": "Search by voice",
+    "stopListening": "Stop listening",
+    "notSupported": "Voice search not supported in this browser",
+    "permissionDenied": "Microphone permission denied",
+    "noSpeech": "No speech detected",
+    "networkError": "Network error",
+    "recognitionError": "Voice recognition error",
+    "startError": "Error starting voice search"
+  },
+  "aria": {
+    "memberList": "List of {{count}} members",
+    "memberList_one": "List of {{count}} member",
+    "memberList_other": "List of {{count}} members",
+    "memberCard": "{{name}} member card",
+    "favoriteButton": "Favorite button",
+    "searchBox": "Search members",
+    "filtersRegion": "Filter controls",
+    "accessibilityRegion": "Accessibility controls",
+    "mainContent": "Main content",
+    "navigation": "Main application navigation BTS",
+    "appContent": "BTS members list"
+  }
+}
