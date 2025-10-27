@@ -10,6 +10,12 @@ process.env.DB_USER = process.env.DB_USER || 'postgres';
 process.env.DB_PASSWORD = process.env.DB_PASSWORD || 'admin123';
 process.env.DB_DIALECT = 'postgres';
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret-key';
+process.env.LOG_LEVEL = 'error'; // Solo errores en tests
+process.env.LOG_DIR = 'test-logs';
+
+// Usar SQLite en memoria para tests
+process.env.DB_DIALECT = 'sqlite';
+process.env.DB_STORAGE = ':memory:';
 
 // Aumentar timeout por defecto de Jest
 jest.setTimeout(10000);

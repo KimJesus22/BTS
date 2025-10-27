@@ -166,10 +166,17 @@ cp .env.example .env
 | `ACCESSIBILITY_FONT_SIZES` | Tamaños de fuente disponibles | `small,medium,large,extra-large` |
 | `ACCESSIBILITY_COLOR_SCHEMES` | Esquemas de color | `default,high-contrast,dark,light,colorblind-friendly` |
 
+#### Variables de Logging y Monitoreo
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
+| `LOG_LEVEL` | Nivel de logging (error, warn, info, debug) | `info` |
+| `LOG_DIR` | Directorio para archivos de log | `logs` |
+| `ALERT_WEBHOOK_URL` | Webhook para alertas (Slack, etc.) | - |
+| `ALERT_EMAIL_TO` | Email para alertas críticas | - |
+
 #### Variables de Optimización
 | Variable | Descripción | Valor por defecto |
 |----------|-------------|-------------------|
-| `LOG_LEVEL` | Nivel de logging | `info` |
 | `CACHE_TIMEOUT` | Timeout de caché (ms) | `300000` |
 | `COMPRESSION_LEVEL` | Nivel de compresión GZIP | `6` |
 | `QUERY_TIMEOUT` | Timeout de queries (ms) | `5000` |
@@ -214,9 +221,10 @@ Con la migración a PostgreSQL, se han realizado los siguientes cambios en la AP
 Los endpoints mantienen la misma funcionalidad pero ahora utilizan PostgreSQL como backend de base de datos.
 
 ### Autenticación
-- `POST /api/auth/register` - Registro de usuario
-- `POST /api/auth/login` - Inicio de sesión
-- `POST /api/auth/forgot-password` - Solicitar reset de contraseña
+- `POST /api/auth/register` - Registro de usuario (público)
+- `POST /api/auth/login` - Inicio de sesión (público)
+- `POST /api/auth/forgot-password` - Solicitar reset de contraseña (público)
+- `POST /api/auth/reset-password` - Resetear contraseña con token (público)
 
 ### Miembros
 - `GET /api/members` - Listar miembros (con filtros y paginación)
@@ -225,7 +233,7 @@ Los endpoints mantienen la misma funcionalidad pero ahora utilizan PostgreSQL co
 - `GET /api/members/popular` - Miembros más populares
 - `GET /api/members/stats` - Estadísticas generales
 
-### Usuarios
+### Usuarios (Requiere autenticación JWT)
 - `GET /api/users/profile` - Perfil del usuario autenticado
 - `PUT /api/users/profile` - Actualizar perfil
 - `PUT /api/users/password` - Cambiar contraseña
@@ -244,9 +252,13 @@ Los endpoints mantienen la misma funcionalidad pero ahora utilizan PostgreSQL co
 - `GET /api/wearable/history` - Historial de datos
 - `GET /api/wearable/achievements` - Logros relacionados
 
-### Administración (Solo Admin)
+### Administración (Requiere rol 'admin')
 - `GET /api/admin/users` - Listar todos los usuarios
+- `GET /api/admin/users/:id` - Obtener usuario específico
 - `PUT /api/admin/users/:id/role` - Cambiar rol de usuario
+- `PUT /api/admin/users/:id/suspend` - Suspender usuario temporalmente
+- `PUT /api/admin/users/:id/reactivate` - Reactivar usuario
+- `GET /api/admin/users/:id/export` - Exportar datos de usuario
 - `POST /api/admin/members` - Crear nuevo miembro
 - `PUT /api/admin/members/:id` - Actualizar miembro
 - `DELETE /api/admin/members/:id` - Eliminar miembro
@@ -268,13 +280,25 @@ npm run test:watch
 
 ## 🔒 Seguridad
 
-- **Autenticación JWT** con expiración configurable
+- **Autenticación JWT** con expiración configurable y roles de usuario
+- **Autorización basada en roles** (user, admin, moderator) para proteger operaciones de escritura
 - **Rate limiting** para prevenir ataques de fuerza bruta
 - **Sanitización** de inputs para prevenir XSS
 - **CORS** configurado para orígenes específicos
-- **Helmet** para headers de seguridad HTTP
+- **Helmet** para headers de seguridad HTTP avanzados:
+  - Content Security Policy (CSP) para prevenir XSS
+  - HSTS para forzar conexiones HTTPS
+  - X-Frame-Options para prevenir clickjacking
+  - X-Content-Type-Options para prevenir MIME sniffing
+  - Referrer Policy para controlar información de referrer
 - **Validación** de datos con Joi
-- **Logging** estructurado de actividades sospechosas
+- **Logging avanzado** con Winston:
+  - Logs rotativos diarios por tipo (errores, general, seguridad)
+  - Niveles configurables (error, warn, info, debug)
+  - Formato JSON estructurado con timestamps
+  - Morgan integrado para logging HTTP
+  - Logs de autenticación y actividades de seguridad
+- **Middleware de autenticación** en rutas protegidas
 
 ## 🎮 Gamificación
 
@@ -326,10 +350,15 @@ Soporte para:
 - `GET /health` - Estado del servicio
 - `GET /api` - Información de la API
 
-### Logs
-- Logs estructurados en JSON
-- Separación por niveles (INFO, WARN, ERROR)
-- Logs de rendimiento y seguridad
+### Logs y Monitoreo
+- **Winston Logger** con rotación diaria de archivos
+- **Logs separados** por tipo: errores, general, seguridad, excepciones
+- **Morgan integrado** para logging HTTP detallado
+- **Niveles configurables**: error, warn, info, debug
+- **Logs de autenticación**: registros de login/logout exitosos y fallidos
+- **Logs de seguridad**: actividades sospechosas y ataques detectados
+- **Logs de rendimiento**: tiempos de respuesta y consultas lentas
+- **Alertas opcionales**: integración con Slack/email para errores críticos
 
 ## 🚀 Despliegue
 
@@ -347,7 +376,9 @@ DB_NAME=bts_prod
 DB_USER=tu_usuario_prod
 DB_PASSWORD=tu_contraseña_segura
 DB_DIALECT=postgres
-JWT_SECRET=tu-clave-secreta-muy-segura
+JWT_SECRET=tu-clave-secreta-muy-segura-min-32-caracteres
+JWT_EXPIRE=7d
+JWT_REFRESH_EXPIRE=30d
 CORS_ORIGIN=https://tu-dominio.com
 ```
 

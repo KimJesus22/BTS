@@ -11,14 +11,22 @@ const securityHeaders = helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"]
+      connectSrc: ["'self'"],
+      frameAncestors: ["'none'"], // Prevenir clickjacking
+      baseUri: ["'self'"],
+      formAction: ["'self'"]
     }
   },
   hsts: {
     maxAge: 31536000,
     includeSubDomains: true,
     preload: true
-  }
+  },
+  noSniff: true, // Prevenir MIME type sniffing
+  xssFilter: true, // Filtro XSS
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  crossOriginEmbedderPolicy: false, // Deshabilitado para compatibilidad con algunos recursos
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 });
 
 // Configuración de CORS
@@ -164,18 +172,24 @@ const bruteForceProtection = (req, res, next) => {
 
 // Middleware para logging de seguridad
 const securityLogger = (req, res, next) => {
+  const { securityLogger: logSecurity } = require('./logger');
+
   const securityLog = {
-    timestamp: new Date().toISOString(),
     ip: req.ip,
     method: req.method,
     url: req.url,
     userAgent: req.get('User-Agent'),
-    userId: req.userId || 'anonymous'
+    userId: req.userId || 'anonymous',
+    headers: {
+      authorization: req.headers.authorization ? '[PRESENT]' : '[MISSING]',
+      'x-forwarded-for': req.headers['x-forwarded-for'],
+      'x-real-ip': req.headers['x-real-ip']
+    }
   };
 
-  // Log de actividades sospechosas
+  // Log de actividades de seguridad
   if (req.method !== 'GET' && req.method !== 'OPTIONS') {
-    console.log('[SECURITY]', JSON.stringify(securityLog));
+    logSecurity('Request', securityLog);
   }
 
   next();

@@ -9,8 +9,9 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 5432,
     dialect: process.env.DB_DIALECT || 'postgres',
+    storage: process.env.DB_STORAGE, // Para SQLite en tests
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
-    pool: {
+    pool: process.env.DB_DIALECT === 'sqlite' ? undefined : {
       max: 5,
       min: 0,
       acquire: 30000,

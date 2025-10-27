@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const { authLogger } = require('../middlewares/logger');
 
 class AuthenticationService {
   constructor() {
@@ -47,21 +48,26 @@ class AuthenticationService {
       }
 
       // Crear nuevo usuario
-      const user = new User({
+      const user = await User.create({
         username,
         email,
         password,
         ...otherData
       });
 
-      await user.save();
-
       // Generar token
-      const token = this.generateToken(user._id);
+      const token = this.generateToken(user.id);
+
+      // Log de registro exitoso
+      authLogger('User Registered', user.id, {
+        username: user.username,
+        email: user.email,
+        role: user.role
+      });
 
       return {
         user: {
-          id: user._id,
+          id: user.id,
           username: user.username,
           email: user.email,
           role: user.role
@@ -85,7 +91,7 @@ class AuthenticationService {
       }
 
       // Verificar si la cuenta está bloqueada
-      if (user.isLocked) {
+      if (user.getIsLocked()) {
         throw new Error('Cuenta bloqueada temporalmente');
       }
 
@@ -93,6 +99,10 @@ class AuthenticationService {
       const isPasswordValid = await user.comparePassword(password);
       if (!isPasswordValid) {
         await user.incLoginAttempts();
+        authLogger('Login Failed - Invalid Password', user.id, {
+          username: user.username,
+          attempts: user.loginAttempts + 1
+        });
         throw new Error('Credenciales inválidas');
       }
 
@@ -102,16 +112,24 @@ class AuthenticationService {
       await user.save();
 
       // Generar token
-      const token = this.generateToken(user._id);
+      const token = this.generateToken(user.id);
+
+      // Log de login exitoso
+      authLogger('Login Successful', user.id, {
+        username: user.username,
+        role: user.role
+      });
 
       return {
         user: {
-          id: user._id,
+          id: user.id,
           username: user.username,
           email: user.email,
           role: user.role,
-          profile: user.profile,
-          gamification: user.gamification
+          firstName: user.firstName,
+          lastName: user.lastName,
+          gamification_level: user.gamification_level,
+          gamification_experience: user.gamification_experience
         },
         token
       };
@@ -124,7 +142,9 @@ class AuthenticationService {
   async getUserByToken(token) {
     try {
       const decoded = this.verifyToken(token);
-      const user = await User.findById(decoded.userId).select('-password');
+      const user = await User.findByPk(decoded.userId, {
+        attributes: { exclude: ['password'] }
+      });
 
       if (!user) {
         throw new Error('Usuario no encontrado');
@@ -139,7 +159,7 @@ class AuthenticationService {
   // Cambiar contraseña
   async changePassword(userId, currentPassword, newPassword) {
     try {
-      const user = await User.findById(userId);
+      const user = await User.findByPk(userId);
       if (!user) {
         throw new Error('Usuario no encontrado');
       }
@@ -150,7 +170,7 @@ class AuthenticationService {
         throw new Error('Contraseña actual incorrecta');
       }
 
-      // Actualizar contraseña (el middleware pre-save la hasheará)
+      // Actualizar contraseña (el hook beforeUpdate la hasheará)
       user.password = newPassword;
       await user.save();
 
@@ -163,7 +183,7 @@ class AuthenticationService {
   // Solicitar reset de contraseña
   async requestPasswordReset(email) {
     try {
-      const user = await User.findOne({ email: email.toLowerCase() });
+      const user = await User.findOne({ where: { email: email.toLowerCase() } });
       if (!user) {
         // No revelar si el email existe o no por seguridad
         return { message: 'Si el email existe, se enviará un enlace de reset' };
@@ -171,7 +191,7 @@ class AuthenticationService {
 
       // Generar token de reset (válido por 1 hora)
       const resetToken = jwt.sign(
-        { userId: user._id, type: 'password_reset' },
+        { userId: user.id, type: 'password_reset' },
         this.jwtSecret,
         { expiresIn: '1h' }
       );
@@ -198,7 +218,7 @@ class AuthenticationService {
         throw new Error('Token inválido');
       }
 
-      const user = await User.findById(decoded.userId);
+      const user = await User.findByPk(decoded.userId);
       if (!user) {
         throw new Error('Usuario no encontrado');
       }
@@ -214,7 +234,7 @@ class AuthenticationService {
 
   // Verificar permisos de administrador
   async requireAdmin(userId) {
-    const user = await User.findById(userId);
+    const user = await User.findByPk(userId);
     if (!user || user.role !== 'admin') {
       throw new Error('Acceso denegado: se requieren permisos de administrador');
     }
@@ -223,7 +243,7 @@ class AuthenticationService {
 
   // Verificar permisos de moderador o superior
   async requireModerator(userId) {
-    const user = await User.findById(userId);
+    const user = await User.findByPk(userId);
     if (!user || !['moderator', 'admin'].includes(user.role)) {
       throw new Error('Acceso denegado: se requieren permisos de moderador');
     }
@@ -252,7 +272,7 @@ class AuthenticationService {
   authorizeRoles(...roles) {
     return async (req, res, next) => {
       try {
-        const user = await User.findById(req.userId);
+        const user = await User.findByPk(req.userId);
         if (!user || !roles.includes(user.role)) {
           return res.status(403).json({ error: 'Acceso denegado' });
         }
