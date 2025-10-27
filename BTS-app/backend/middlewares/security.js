@@ -84,10 +84,8 @@ const apiLimiter = rateLimit({
   message: {
     error: 'Demasiadas solicitudes a la API'
   },
-  keyGenerator: (req) => {
-    // Usar userId si está autenticado, sino IP
-    return req.userId || req.ip;
-  }
+  standardHeaders: true,
+  legacyHeaders: false
 });
 
 // Middleware para sanitizar inputs

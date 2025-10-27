@@ -43,18 +43,15 @@ const config = {
     }
   },
 
-  // Generar umbrales de nivel
-  generateLevelThresholds() {
-    const thresholds = {};
-    for (let level = 1; level <= 100; level++) {
-      thresholds[level] = Math.floor(1000 * Math.pow(1.2, level - 1));
-    }
-    return thresholds;
-  },
-
   // Configuración de gamificación
   gamification: {
-    levelThresholds: this.generateLevelThresholds(),
+    levelThresholds: (() => {
+      const thresholds = {};
+      for (let level = 1; level <= 100; level++) {
+        thresholds[level] = Math.floor(1000 * Math.pow(1.2, level - 1));
+      }
+      return thresholds;
+    })(),
     achievementPoints: {
       firstLogin: 100,
       profileComplete: 200,
@@ -96,14 +93,6 @@ const config = {
     colorSchemes: ['default', 'high-contrast', 'dark', 'light', 'colorblind-friendly']
   },
 
-  // Generar umbrales de nivel
-  generateLevelThresholds() {
-    const thresholds = {};
-    for (let level = 1; level <= 100; level++) {
-      thresholds[level] = Math.floor(1000 * Math.pow(1.2, level - 1));
-    }
-    return thresholds;
-  },
 
   // Validar configuración
   validate() {

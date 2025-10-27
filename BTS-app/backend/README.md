@@ -96,14 +96,83 @@ backend/
 
 ### Variables de Entorno
 
+Copia el archivo `.env.example` a `.env` y configura las variables necesarias:
+
+```bash
+cp .env.example .env
+```
+
+#### Variables Requeridas
+| Variable | Descripción | Ejemplo |
+|----------|-------------|---------|
+| `JWT_SECRET` | Clave secreta para JWT (mínimo 32 caracteres) | `tu-clave-secreta-muy-segura-aqui-32-chars` |
+
+#### Variables de Base de Datos
 | Variable | Descripción | Valor por defecto |
 |----------|-------------|-------------------|
 | `MONGODB_URI` | URI de conexión a MongoDB | `mongodb://localhost:27017/bts-app` |
+
+#### Variables del Servidor
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
 | `PORT` | Puerto del servidor | `3001` |
 | `NODE_ENV` | Ambiente de ejecución | `development` |
-| `JWT_SECRET` | Clave secreta para JWT | *(requerido)* |
-| `JWT_EXPIRE` | Expiración del token JWT | `7d` |
 | `CORS_ORIGIN` | Origen permitido para CORS | `http://localhost:3000` |
+
+#### Variables de Seguridad
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
+| `JWT_EXPIRE` | Expiración del token JWT | `7d` |
+| `JWT_REFRESH_EXPIRE` | Expiración del refresh token | `30d` |
+| `BCRYPT_ROUNDS` | Rondas de hashing para contraseñas | `12` |
+| `SESSION_TIMEOUT` | Timeout de sesión (ms) | `86400000` |
+| `MAX_LOGIN_ATTEMPTS` | Máximo intentos de login | `5` |
+| `LOCKOUT_DURATION` | Duración del bloqueo (ms) | `7200000` |
+
+#### Variables de Rate Limiting
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
+| `RATE_LIMIT_WINDOW_MS` | Ventana de rate limiting (ms) | `900000` |
+| `RATE_LIMIT_MAX_REQUESTS` | Máximo requests generales | `100` |
+| `RATE_LIMIT_AUTH_MAX` | Máximo requests de auth | `5` |
+| `RATE_LIMIT_API_MAX` | Máximo requests de API | `1000` |
+
+#### Variables de Gamificación
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
+| `GAMIFICATION_ENABLED` | Habilitar gamificación | `true` |
+| `LEVEL_THRESHOLD_BASE` | XP base por nivel | `1000` |
+| `LEVEL_THRESHOLD_MULTIPLIER` | Multiplicador de nivel | `1.2` |
+
+#### Variables de Wearables
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
+| `WEARABLE_SYNC_INTERVAL` | Intervalo de sincronización (ms) | `900000` |
+| `WEARABLE_DATA_RETENTION_DAYS` | Días de retención de datos | `365` |
+| `WEARABLE_BATTERY_WARNING` | Umbral de batería baja | `20` |
+| `WEARABLE_MAX_READINGS_PER_SYNC` | Máximo lecturas por sync | `100` |
+
+#### Variables de Accesibilidad
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
+| `ACCESSIBILITY_SUPPORTED_LANGUAGES` | Idiomas soportados | `es,en` |
+| `ACCESSIBILITY_FONT_SIZES` | Tamaños de fuente disponibles | `small,medium,large,extra-large` |
+| `ACCESSIBILITY_COLOR_SCHEMES` | Esquemas de color | `default,high-contrast,dark,light,colorblind-friendly` |
+
+#### Variables de Optimización
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
+| `LOG_LEVEL` | Nivel de logging | `info` |
+| `CACHE_TIMEOUT` | Timeout de caché (ms) | `300000` |
+| `COMPRESSION_LEVEL` | Nivel de compresión GZIP | `6` |
+| `QUERY_TIMEOUT` | Timeout de queries (ms) | `5000` |
+
+#### Variables de Servicios Externos (Opcionales)
+| Variable | Descripción | Ejemplo |
+|----------|-------------|---------|
+| `REDIS_URL` | URL de Redis para caché | `redis://localhost:6379` |
+| `EMAIL_SERVICE_API_KEY` | API key para servicio de email | `tu-api-key-aqui` |
+| `PUSH_NOTIFICATION_KEY` | Clave para notificaciones push | `tu-clave-push-aqui` |
 
 ### Base de Datos
 
