@@ -1,6 +1,6 @@
 
 // Importar las dependencias de React y React Router
-import React from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAccessibility } from '../contexts/AccessibilityContext';
@@ -8,19 +8,19 @@ import { useTranslation } from 'react-i18next';
 
 // --- Componente de la Tarjeta de Miembro ---
 
-const TarjetaMiembro = ({ miembro, esFavorito, onToggleFavorito, esVisitado, estaEnfocado, onKeyDown, index }) => {
+const TarjetaMiembro = memo(({ miembro, esFavorito, onToggleFavorito, esVisitado, estaEnfocado, onKeyDown, index }) => {
   const { t } = useTranslation();
   const { animationsEnabled } = useAccessibility();
 
-  // Maneja el clic en el botón de favorito
-  const manejarClicFavorito = (e) => {
+  // Memoizar el manejador de clic para evitar re-renders innecesarios
+  const manejarClicFavorito = useCallback((e) => {
     e.preventDefault(); // Prevenir la navegación al hacer clic en la estrella
     e.stopPropagation(); // Detener la propagación del evento para no activar el Link principal
     onToggleFavorito(miembro.id); // Llamar a la función para cambiar el estado de favorito
-  };
+  }, [miembro.id, onToggleFavorito]);
 
-  // Variantes de animación para la tarjeta
-  const cardVariants = {
+  // Memoizar variantes de animación para evitar recrear objetos en cada render
+  const cardVariants = useMemo(() => ({
     initial: { opacity: 0, y: 20 },
     animate: {
       opacity: 1,
@@ -31,10 +31,10 @@ const TarjetaMiembro = ({ miembro, esFavorito, onToggleFavorito, esVisitado, est
       scale: 1.05,
       transition: { duration: 0.2 }
     }
-  };
+  }), [index]);
 
-  // Variantes de animación para el botón de favorito
-  const favoriteVariants = {
+  // Memoizar variantes de animación para el botón de favorito
+  const favoriteVariants = useMemo(() => ({
     initial: { scale: 1 },
     animate: { scale: 1 },
     tap: { scale: 0.9 },
@@ -43,7 +43,7 @@ const TarjetaMiembro = ({ miembro, esFavorito, onToggleFavorito, esVisitado, est
       color: ['#ffd700', '#ffed4e', '#ffd700'],
       transition: { duration: 0.3 }
     }
-  };
+  }), []);
 
   return (
     <motion.div
@@ -101,7 +101,10 @@ const TarjetaMiembro = ({ miembro, esFavorito, onToggleFavorito, esVisitado, est
       </Link>
     </motion.div>
   );
-};
+});
+
+// Agregar displayName para debugging
+TarjetaMiembro.displayName = 'TarjetaMiembro';
 
 // Exportar el componente para su uso en otras partes de la aplicación
 export default TarjetaMiembro;

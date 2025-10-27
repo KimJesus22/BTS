@@ -1,4 +1,4 @@
-import React, { forwardRef, useState, memo } from 'react';
+import React, { forwardRef, useState, memo, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
@@ -8,7 +8,7 @@ import { useWearableOptimizations } from '../hooks/useWearableOptimizations';
 import { DESIGN_TOKENS } from '../design-tokens';
 
 // Componente Input atómico reutilizable
-const Input = forwardRef(({
+const Input = memo(forwardRef(({
   label,
   error,
   helperText,
@@ -44,8 +44,8 @@ const Input = forwardRef(({
   const [isFocused, setIsFocused] = useState(false);
   const [hasValue, setHasValue] = useState(!!value);
 
-  // Configuraciones de variante
-  const variants = {
+  // Memoizar configuraciones de variante
+  const variants = useMemo(() => ({
     outlined: {
       borderColor: error ? palette.error : isFocused ? palette.primary : palette.border,
       backgroundColor: disabled ? palette.surface : palette.background,
@@ -64,10 +64,10 @@ const Input = forwardRef(({
       borderBottomWidth: '2px',
       boxShadow: 'none'
     }
-  };
+  }), [palette, error, isFocused, disabled]);
 
-  // Configuraciones de tamaño
-  const sizes = {
+  // Memoizar configuraciones de tamaño
+  const sizes = useMemo(() => ({
     sm: {
       padding: `${DESIGN_TOKENS.spacing[1.5]} ${DESIGN_TOKENS.spacing[3]}`,
       fontSize: DESIGN_TOKENS.typography.fontSize.sm,
@@ -86,7 +86,7 @@ const Input = forwardRef(({
       borderRadius: DESIGN_TOKENS.borderRadius.lg,
       minHeight: '48px'
     }
-  };
+  }), []);
 
   // Ajustes para wearables
   const wearableAdjustments = isWearable ? {
@@ -130,24 +130,22 @@ const Input = forwardRef(({
     }
   };
 
-  // Manejar cambios
-  const handleChange = (event) => {
+  // Memoizar manejadores de eventos
+  const handleChange = useCallback((event) => {
     const newValue = event.target.value;
     setHasValue(!!newValue);
     onChange?.(event);
-  };
+  }, [onChange]);
 
-  // Manejar foco
-  const handleFocus = (event) => {
+  const handleFocus = useCallback((event) => {
     setIsFocused(true);
     onFocus?.(event);
-  };
+  }, [onFocus]);
 
-  // Manejar desenfoque
-  const handleBlur = (event) => {
+  const handleBlur = useCallback((event) => {
     setIsFocused(false);
     onBlur?.(event);
-  };
+  }, [onBlur]);
 
   // Estado del input
   const inputState = disabled ? 'disabled' : error ? 'error' : isFocused ? 'focus' : 'idle';
@@ -313,8 +311,8 @@ const Input = forwardRef(({
       )}
     </div>
   );
-});
+}));
 
 Input.displayName = 'Input';
 
-export default memo(Input);
+export default Input;

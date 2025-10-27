@@ -1,4 +1,4 @@
-import React, { forwardRef, memo } from 'react';
+import React, { forwardRef, memo, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
@@ -8,7 +8,7 @@ import { useWearableOptimizations } from '../hooks/useWearableOptimizations';
 import { DESIGN_TOKENS } from '../design-tokens';
 
 // Componente Button atómico reutilizable
-const Button = forwardRef(({
+const Button = memo(forwardRef(({
   children,
   variant = 'primary',
   size = 'md',
@@ -32,8 +32,8 @@ const Button = forwardRef(({
   const palette = getCurrentPalette();
   const animationSettings = getAnimationSettings();
 
-  // Configuraciones de variante
-  const variants = {
+  // Memoizar configuraciones de variante para evitar recrear objetos
+  const variants = useMemo(() => ({
     primary: {
       backgroundColor: palette.primary,
       color: palette.background,
@@ -106,10 +106,10 @@ const Button = forwardRef(({
         transform: (animationsEnabled && !reducedAnimations && !accessibilityMode) ? 'translateY(-1px)' : 'none'
       }
     }
-  };
+  }), [palette, animationsEnabled, reducedAnimations, accessibilityMode]);
 
-  // Configuraciones de tamaño
-  const sizes = {
+  // Memoizar configuraciones de tamaño
+  const sizes = useMemo(() => ({
     xs: {
       padding: `${DESIGN_TOKENS.spacing[1]} ${DESIGN_TOKENS.spacing[2]}`,
       fontSize: DESIGN_TOKENS.typography.fontSize.xs,
@@ -140,7 +140,7 @@ const Button = forwardRef(({
       borderRadius: DESIGN_TOKENS.borderRadius.xl,
       minHeight: '56px'
     }
-  };
+  }), []);
 
   // Ajustes para wearables
   const wearableAdjustments = isWearable ? {
@@ -175,11 +175,11 @@ const Button = forwardRef(({
     }
   };
 
-  // Manejar clic
-  const handleClick = (event) => {
+  // Memoizar manejador de clic para evitar re-renders
+  const handleClick = useCallback((event) => {
     if (disabled || loading) return;
     onClick?.(event);
-  };
+  }, [disabled, loading, onClick]);
 
   // Estado del botón
   const buttonState = disabled ? 'disabled' : loading ? 'loading' : 'idle';
@@ -272,8 +272,8 @@ const Button = forwardRef(({
       )}
     </motion.button>
   );
-});
+}));
 
 Button.displayName = 'Button';
 
-export default memo(Button);
+export default Button;
