@@ -1,5 +1,5 @@
 // Contexto de Accesibilidad para manejar preferencias de usuario según WCAG 2.1
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 // Crear el contexto
@@ -27,6 +27,24 @@ export const AccessibilityProvider = ({ children }) => {
     return saved || i18n.language || 'es'; // Idioma por defecto español
   });
 
+  // Estado para habilitar/deshabilitar animaciones
+  const [animationsEnabled, setAnimationsEnabled] = useState(() => {
+    const saved = localStorage.getItem('accessibility-animationsEnabled');
+    return saved !== null ? JSON.parse(saved) : true; // Animaciones habilitadas por defecto
+  });
+
+  // Estado para el tema preferido (integración con ThemeContext)
+  const [preferredTheme, setPreferredTheme] = useState(() => {
+    const saved = localStorage.getItem('accessibility-preferredTheme');
+    return saved || 'auto'; // Tema automático por defecto
+  });
+
+  // Estado para el modo de accesibilidad completo
+  const [accessibilityMode, setAccessibilityMode] = useState(() => {
+    const saved = localStorage.getItem('accessibility-mode');
+    return saved !== null ? JSON.parse(saved) : false; // Modo desactivado por defecto
+  });
+
   // Efecto para guardar el tamaño de fuente en localStorage
   useEffect(() => {
     localStorage.setItem('accessibility-fontSize', fontSize.toString());
@@ -46,6 +64,38 @@ export const AccessibilityProvider = ({ children }) => {
     localStorage.setItem('accessibility-language', language);
     i18n.changeLanguage(language);
   }, [language, i18n]);
+
+  // Efecto para guardar la preferencia de animaciones en localStorage
+  useEffect(() => {
+    localStorage.setItem('accessibility-animationsEnabled', JSON.stringify(animationsEnabled));
+  }, [animationsEnabled]);
+
+  // Efecto para guardar la preferencia de tema en localStorage
+  useEffect(() => {
+    localStorage.setItem('accessibility-preferredTheme', preferredTheme);
+  }, [preferredTheme]);
+
+  // Efecto para guardar el modo de accesibilidad en localStorage y aplicar cambios globales
+  useEffect(() => {
+    localStorage.setItem('accessibility-mode', JSON.stringify(accessibilityMode));
+    if (accessibilityMode) {
+      // Aplicar cambios para modo de accesibilidad
+      document.documentElement.style.setProperty('--spacing-multiplier', '1.5'); // Aumentar espaciado 50%
+      document.documentElement.style.setProperty('--font-size-multiplier', '1.25'); // Aumentar fuente 25% (20% adicional)
+      document.documentElement.setAttribute('data-accessibility-mode', 'true');
+      // Desactivar animaciones globalmente
+      document.documentElement.style.setProperty('--animation-duration', '0s');
+      // Aplicar alto contraste
+      document.documentElement.setAttribute('data-high-contrast', 'true');
+    } else {
+      // Restaurar valores por defecto
+      document.documentElement.style.setProperty('--spacing-multiplier', '1');
+      document.documentElement.style.setProperty('--font-size-multiplier', '1');
+      document.documentElement.removeAttribute('data-accessibility-mode');
+      document.documentElement.style.setProperty('--animation-duration', '0.3s');
+      document.documentElement.removeAttribute('data-high-contrast');
+    }
+  }, [accessibilityMode]);
 
   // Función para cambiar el tamaño de fuente
   const changeFontSize = (newSize) => {
@@ -88,17 +138,56 @@ export const AccessibilityProvider = ({ children }) => {
     }
   };
 
-  // Valor del contexto
-  const value = {
+  // Función para cambiar la preferencia de animaciones
+  const toggleAnimations = () => {
+    setAnimationsEnabled(prev => !prev);
+  };
+
+  // Función para cambiar el tema preferido
+  const changePreferredTheme = (theme) => {
+    const validThemes = ['auto', 'light', 'dark', 'highContrast', 'sepia'];
+    if (validThemes.includes(theme)) {
+      setPreferredTheme(theme);
+    }
+  };
+
+  // Función para alternar el modo de accesibilidad completo
+  const toggleAccessibilityMode = useCallback(() => {
+    setAccessibilityMode(prev => !prev);
+  }, []);
+
+  // Valor del contexto memoizado para evitar re-renders innecesarios
+  const value = useMemo(() => ({
     fontSize,
     colorPalette,
     language,
+    animationsEnabled,
+    preferredTheme,
+    accessibilityMode,
     changeFontSize,
     changeColorPalette,
     changeLanguage,
+    toggleAnimations,
+    changePreferredTheme,
+    toggleAccessibilityMode,
     mantenerFocoPersistente,
     restaurarFocoPersistente,
-  };
+  }), [
+    fontSize,
+    colorPalette,
+    language,
+    animationsEnabled,
+    preferredTheme,
+    accessibilityMode,
+    changeFontSize,
+    changeColorPalette,
+    changeLanguage,
+    toggleAnimations,
+    changePreferredTheme,
+    toggleAccessibilityMode,
+    mantenerFocoPersistente,
+    restaurarFocoPersistente,
+  ]);
 
   return (
     <AccessibilityContext.Provider value={value}>

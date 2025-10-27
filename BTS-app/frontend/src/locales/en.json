@@ -13,14 +13,16 @@
     "noResults": "No members found matching your search."
   },
   "voice": {
-    "startListening": "Voice search",
+    "play": "Listen",
+    "stop": "Stop",
+    "startListening": "Search by voice",
     "stopListening": "Stop listening",
-    "permissionDenied": "Microphone permission denied",
-    "recognitionError": "Voice recognition error",
-    "startError": "Error starting voice search",
     "notSupported": "Voice search not supported in this browser",
+    "permissionDenied": "Microphone permission denied",
     "noSpeech": "No speech detected",
-    "networkError": "Network error"
+    "networkError": "Network error",
+    "recognitionError": "Voice recognition error",
+    "startError": "Error starting voice search"
   },
   "filters": {
     "favorites": "★ Favorites Only",
@@ -63,6 +65,23 @@
     "voicePlay": "Listen to biography",
     "voiceStop": "Stop narration"
   },
+  "theme": {
+    "title": "Theme",
+    "toggleTheme": "Toggle theme",
+    "themeOptions": "Theme options",
+    "settings": "Settings",
+    "selectTheme": "Select theme",
+    "auto": "Automatic",
+    "light": "Light",
+    "dark": "Dark",
+    "highContrast": "High contrast",
+    "sepia": "Sepia",
+    "autoMode": "Automatic mode",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode",
+    "highContrastMode": "High contrast mode",
+    "sepiaMode": "Sepia mode"
+  },
   "errors": {
     "loading": "Loading...",
     "networkError": "Network response was not satisfactory.",
@@ -93,5 +112,161 @@
     "mainContent": "Main content",
     "navigation": "Main application navigation BTS",
     "appContent": "BTS members list"
+  },
+  "recommendations": {
+    "title": "Recommendations for you",
+    "loading": "Loading recommendations...",
+    "noRecommendations": "No recommendations available",
+    "refresh": "Refresh recommendations",
+    "reasons": {
+      "similar_role": "Member with similar role",
+      "similar_to_visited": "Similar to members you've visited",
+      "similar_to_favorites": "Similar to your favorites",
+      "matches_recent_searches": "Matches your recent searches",
+      "discovery": "Discover new members"
+    },
+    "viewAll": "View all recommendations",
+    "hide": "Hide recommendations"
+  },
+  "speech": {
+    "recommendationsIntro": "Here are {{count}} personalized recommendations for you.",
+    "noRecommendations": "I don't have any recommendations to show you right now.",
+    "nextRecommendation": "Next recommendation",
+    "recommendation": {
+      "similarRole": "I recommend {{name}}, whose real name is {{real_name}}. They are another {{role}} like the ones that interest you.",
+      "similarToVisited": "{{name}}, whose real name is {{real_name}}, is similar to members you've visited recently.",
+      "similarToFavorites": "{{name}} ({{real_name}}) has characteristics similar to your favorite members.",
+      "matchesSearches": "{{name}}, known as {{real_name}}, matches terms you've searched for lately.",
+      "discovery": "Discover {{name}}, whose real name is {{real_name}}. They might be a new addition to your favorites!",
+      "default": "{{name}}, whose real name is {{real_name}}, is a {{role}} from BTS that I think you'll be interested in."
+    },
+    "memberDetails": "{{name}}, whose real name is {{real_name}}, is a {{role}} from BTS.",
+    "searchResults": "I found {{count}} results for '{{term}}'.",
+    "noSearchResults": "I found no results for '{{term}}'.",
+    "searchResult": "Result {{index}}: {{name}}, {{role}}.",
+    "keyboardNavigation": "{{name}}, item {{position}} of {{total}}.",
+    "filter": {
+      "favoritesOn": "Favorites filter activated.",
+      "favoritesOff": "Favorites filter deactivated.",
+      "searchActive": "Active search for '{{term}}'.",
+      "roleFilter": "Filtering by {{role}}s.",
+      "genericChange": "Filter updated."
+    },
+    "userStats": "You've visited {{visits}} profiles, have {{favorites}} favorites and performed {{searches}} searches."
+  },
+  "home": {
+    "title": "BTS Members",
+    "searchPlaceholder": "Search members...",
+    "searchDescription": "Search BTS members by name, real name or role",
+    "noResults": "No members found",
+    "favoritesToggle": "Favorites",
+    "showAll": "Show all",
+    "showFavorites": "Show favorites",
+    "progress": "You've explored {{count}} of {{total}} profiles",
+    "membersList": "BTS members list",
+    "error": "Error loading members"
+  },
+  "member": {
+    "visited": "Visited",
+    "viewDetails": "View details of {{name}} ({{realName}}) - {{role}}",
+    "addFavorite": "Add {{name}} to favorites",
+    "removeFavorite": "Remove {{name}} from favorites"
+  },
+  "accessibility": {
+    "filters": "Filters and search",
+    "membersList": "BTS members list"
+  },
+  "privacy": {
+    "title": "Privacy Panel",
+    "pageTitle": "Privacy & Data",
+    "navigation": "Privacy navigation",
+    "backToApp": "Back to app",
+    "showDetails": "Show details",
+    "hideDetails": "Hide details",
+    "storageSize": "Storage size",
+    "lastActivity": "Last activity",
+    "never": "Never",
+    "totalVisits": "Total visits",
+    "recentSearches": "Recent searches",
+    "none": "None",
+    "cancel": "Cancel",
+    "dataInfo": {
+      "title": "Information about your data",
+      "analytics": {
+        "title": "Analytics data",
+        "visits": "Member profile visits",
+        "searches": "Search terms",
+        "favorites": "Favorite members",
+        "timeSpent": "Time spent in the application"
+      },
+      "preferences": {
+        "title": "User preferences",
+        "language": "Preferred language",
+        "theme": "Visual theme",
+        "accessibility": "Accessibility settings",
+        "voice": "Voice and audio preferences"
+      }
+    },
+    "controls": {
+      "title": "Privacy controls",
+      "optOut": {
+        "title": "Opt-out options",
+        "analytics": "Opt out of data analytics",
+        "voiceSearch": "Disable voice search",
+        "searchHistory": "Do not save search history"
+      }
+    },
+    "microphone": {
+      "title": "Microphone usage",
+      "description": "The application requests microphone access only for the voice search feature. Audio data is processed locally and is not stored or transmitted.",
+      "requestPermission": "Request permission",
+      "permissionStatus": "Permission status"
+    },
+    "storage": {
+      "title": "Storage transparency",
+      "localStorage": "All data is stored only in the browser's local storage.",
+      "noServer": "No data is transmitted to external servers.",
+      "encryption": "Sensitive data is protected by browser security policies."
+    },
+    "actions": {
+      "title": "Data actions",
+      "export": {
+        "title": "Export data",
+        "ariaLabel": "Export all your personal data",
+        "jsonFormat": "Complete structured format",
+        "csvFormat": "Simplified spreadsheet format",
+        "confirm": "Export"
+      },
+      "delete": {
+        "title": "Delete all data",
+        "ariaLabel": "Permanently delete all your data",
+        "confirm": "Delete permanently",
+        "warning": "This action cannot be undone.",
+        "list": {
+          "analytics": "Usage analytics data",
+          "preferences": "Personalized preferences",
+          "favorites": "Favorite members list",
+          "searchHistory": "Search history"
+        },
+        "irreversible": "This action is irreversible.",
+        "success": "All data has been successfully deleted."
+      }
+    },
+    "compliance": {
+      "title": "Regulatory compliance",
+      "gdpr": "GDPR",
+      "ccpa": "CCPA",
+      "wcag": "WCAG 2.1",
+      "description": "This application complies with GDPR, CCPA privacy standards and WCAG 2.1 accessibility guidelines."
+    },
+    "links": {
+      "policy": "Privacy policy",
+      "terms": "Terms of service",
+      "contact": "Contact"
+    },
+    "copyright": "© {{year}} BTS App. All rights reserved.",
+    "importSuccess": "Data imported successfully",
+    "importError": "Error importing data. Please check the file format.",
+    "confirmDelete": "Are you sure you want to permanently delete all your data? This action cannot be undone."
   }
 }

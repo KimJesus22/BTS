@@ -1,10 +1,23 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import TarjetaMiembro from '../components/TarjetaMiembro';
+import SwipeableCard from '../components/SwipeableCard';
 import AccessibilityControls from '../components/AccessibilityControls';
+import ThemeToggle from '../components/ThemeToggle';
+import SeccionRecomendaciones from '../components/SeccionRecomendaciones';
+import SearchBar from '../components/SearchBar';
 import { useAccessibility } from '../contexts/AccessibilityContext';
+import { useOnboarding } from '../contexts/OnboardingContext';
 import useSpeechRecognition from '../hooks/useSpeechRecognition';
+import useUserAnalytics from '../hooks/useUserAnalytics';
+import usePersonalizedSpeech from '../hooks/usePersonalizedSpeech';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
+import { useGamification } from '../hooks/useGamification';
+import { usePWA } from '../hooks/usePWA';
+import { DESIGN_TOKENS } from '../design-tokens';
 
 // --- Funciones Auxiliares para el Estado Inicial desde localStorage ---
 
@@ -50,6 +63,49 @@ const PaginaPrincipal = () => {
    // Hook para reconocimiento de voz
    const { isSupported: speechSupported, isListening, transcript, error: speechError, startListening, stopListening } = useSpeechRecognition();
 
+   // Hooks para análisis de usuario y recomendaciones
+   const { trackSearch, updateFavorites } = useUserAnalytics();
+   const { speakFilterChange } = usePersonalizedSpeech();
+
+   // Hook para gamificación
+   const { addPoints } = useGamification();
+
+   // Hook para PWA y pull-to-refresh
+   const { isOnline } = usePWA();
+
+   // Hook para onboarding
+   const { isCompleted: onboardingCompleted, getCurrentStepData } = useOnboarding();
+
+   // Hook para pull-to-refresh
+   const handleRefresh = useCallback(async () => {
+     try {
+       // Refrescar datos desde la API
+       const response = await fetch('http://localhost:3001/api/members');
+       if (!response.ok) throw new Error('Error al refrescar datos');
+
+       const datos = await response.json();
+       setMiembros(datos);
+
+       // Reset filtros después del refresh
+       setTerminoBusqueda('');
+       setMostrarSoloFavoritos(false);
+
+       // Gamificación: puntos por refresh exitoso
+       addPoints(1, 'Contenido actualizado');
+
+       // Feedback visual (opcional)
+       console.log('Contenido actualizado exitosamente');
+     } catch (error) {
+       console.error('Error durante refresh:', error);
+       setError(t('home.refreshError', 'Error al actualizar contenido'));
+     }
+   }, [addPoints, t]);
+
+   const { containerRef, isRefreshing, progress, config } = usePullToRefresh({
+     onRefresh: handleRefresh,
+     disabled: !isOnline
+   });
+
   // --- Efectos (Hooks de Efecto) ---
 
   // Efecto para obtener los datos iniciales de los miembros desde la API
@@ -75,16 +131,21 @@ const PaginaPrincipal = () => {
   }, [favoritos]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Efecto para actualizar el estado de "visitados" cuando la pestaña del navegador recupera el foco
-  useEffect(() => {
-    const manejarFoco = () => {
-      setVisitados(obtenerVisitadosIniciales());
-    };
-    window.addEventListener('focus', manejarFoco);
-    // Función de limpieza para eliminar el listener cuando el componente se desmonta
-    return () => {
-      window.removeEventListener('focus', manejarFoco);
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+   useEffect(() => {
+     const manejarFoco = () => {
+       setVisitados(obtenerVisitadosIniciales());
+     };
+     window.addEventListener('focus', manejarFoco);
+     // Función de limpieza para eliminar el listener cuando el componente se desmonta
+     return () => {
+       window.removeEventListener('focus', manejarFoco);
+     };
+   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+   // Efecto para actualizar favoritos en analytics cuando cambian
+   useEffect(() => {
+     updateFavorites(favoritos);
+   }, [favoritos, updateFavorites]);
 
   // Efecto para filtrar los miembros según el término de búsqueda y el filtro de favoritos
   useEffect(() => {
@@ -122,26 +183,48 @@ const PaginaPrincipal = () => {
   };
 
   // Efecto para actualizar el término de búsqueda cuando se recibe transcript
-  useEffect(() => {
-    if (transcript) {
-      setTerminoBusqueda(transcript);
-    }
-  }, [transcript]);
+   useEffect(() => {
+     if (transcript) {
+       setTerminoBusqueda(transcript);
+       trackSearch(transcript);
+     }
+   }, [transcript, trackSearch]);
 
   // --- Manejadores de Eventos ---
 
   // Maneja el clic en el botón de favorito de una tarjeta
-  const manejarCambioFavorito = (miembroId) => {
-    setFavoritos(prevFavoritos => {
-      if (prevFavoritos.includes(miembroId)) {
-        // Si ya es favorito, quitarlo de la lista
-        return prevFavoritos.filter(id => id !== miembroId);
-      } else {
-        // Si no es favorito, añadirlo a la lista
-        return [...prevFavoritos, miembroId];
-      }
-    });
-  };
+   const manejarCambioFavorito = (miembroId) => {
+     setFavoritos(prevFavoritos => {
+       const newFavoritos = prevFavoritos.includes(miembroId)
+         ? prevFavoritos.filter(id => id !== miembroId)
+         : [...prevFavoritos, miembroId];
+
+       // Actualizar analytics
+       updateFavorites(newFavoritos);
+
+       // Anunciar cambio si está habilitado
+       speakFilterChange('favorites', newFavoritos.includes(miembroId));
+
+       return newFavoritos;
+     });
+   };
+
+   // Hook para gamificación con trackSwipeGesture
+   const { trackSwipeGesture } = useGamification();
+
+   // Manejadores para SwipeableCard
+   const manejarSwipeFavorito = useCallback((miembroId) => {
+     manejarCambioFavorito(miembroId);
+     // Gamificación adicional por gesto táctil
+     trackSwipeGesture('swipe_favorite', miembroId);
+   }, [manejarCambioFavorito, trackSwipeGesture]);
+
+   const manejarSwipeEliminar = useCallback((miembroId) => {
+     // Para eliminación, podríamos mostrar confirmación o simplemente quitar de vista
+     // Por ahora, solo logueamos
+     console.log('Swipe eliminar:', miembroId);
+     trackSwipeGesture('swipe_delete', miembroId);
+   }, [trackSwipeGesture]);
 
   // Maneja la navegación por teclado en la lista de miembros
   const manejarNavegacionTeclado = (e) => {
@@ -196,16 +279,26 @@ const PaginaPrincipal = () => {
     return (
       <div className="row" role="list" aria-label={t('home.membersList', { count: miembrosFiltrados.length })}>
         {miembrosFiltrados.map((miembro, index) => (
-          <TarjetaMiembro
+          <SwipeableCard
             key={miembro.id}
-            miembro={miembro}
-            esFavorito={favoritos.includes(miembro.id)}
-            onToggleFavorito={manejarCambioFavorito}
-            esVisitado={visitados.includes(String(miembro.id))} // Asegurar que la comparación sea correcta
-            estaEnfocado={index === indiceFoco}
-            onKeyDown={(e) => manejarActivacionTeclado(e, miembro.id)}
-            index={index}
-          />
+            title={miembro.name}
+            subtitle={miembro.role}
+            itemId={miembro.id}
+            onFavorite={manejarSwipeFavorito}
+            onDelete={manejarSwipeEliminar}
+            gamificationEnabled={true}
+            style={{ marginBottom: DESIGN_TOKENS.spacing[4] }}
+          >
+            <TarjetaMiembro
+              miembro={miembro}
+              esFavorito={favoritos.includes(miembro.id)}
+              onToggleFavorito={manejarCambioFavorito}
+              esVisitado={visitados.includes(String(miembro.id))} // Asegurar que la comparación sea correcta
+              estaEnfocado={index === indiceFoco}
+              onKeyDown={(e) => manejarActivacionTeclado(e, miembro.id)}
+              index={index}
+            />
+          </SwipeableCard>
         ))}
       </div>
     );
@@ -213,68 +306,196 @@ const PaginaPrincipal = () => {
 
   // --- JSX del Componente ---
 
-  return (
-    <>
-      {/* Título visible solo en dispositivos móviles */}
-      <div className="col-12 d-md-none">
-        <h1 className="mobile-title">{t('home.title')}</h1>
-      </div>
-
-      {/* Controles de accesibilidad */}
-      <AccessibilityControls />
-
-      {/* Contenedor para los filtros de búsqueda y favoritos */}
-      <div className="filters-container" role="region" aria-label={t('accessibility.filters')}>
-        <div className="search-container">
-          <input
-            type="text"
-            placeholder={t('home.searchPlaceholder')}
-            className="search-bar"
-            value={terminoBusqueda}
-            onChange={e => setTerminoBusqueda(e.target.value)}
-            aria-label={t('home.searchPlaceholder')}
-            role="searchbox"
-            aria-describedby="search-description"
-          />
-          <div id="search-description" className="sr-only">{t('home.searchDescription')}</div>
-
-          {/* Botón de búsqueda por voz */}
-          {speechSupported && (
-            <button
-              onClick={toggleVoiceSearch}
-              className={`voice-search-btn ${isListening ? 'listening' : ''}`}
-              aria-label={isListening ? t('voice.stopListening', 'Detener escucha') : t('voice.startListening', 'Buscar por voz')}
-              title={isListening ? t('voice.stopListening', 'Detener escucha') : t('voice.startListening', 'Buscar por voz')}
-              disabled={!speechSupported}
+    return (
+      <div ref={containerRef} style={{ minHeight: '100vh' }}>
+        {/* Indicador de pull-to-refresh */}
+        <AnimatePresence>
+          {isRefreshing && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              style={{
+                position: 'fixed',
+                top: DESIGN_TOKENS.spacing[4],
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 1000,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                color: 'white',
+                padding: `${DESIGN_TOKENS.spacing[2]} ${DESIGN_TOKENS.spacing[4]}`,
+                borderRadius: DESIGN_TOKENS.borderRadius.md,
+                fontSize: DESIGN_TOKENS.typography.fontSize.sm,
+                display: 'flex',
+                alignItems: 'center',
+                gap: DESIGN_TOKENS.spacing[2]
+              }}
             >
-              <span className="voice-icon" aria-hidden="true">
-                {isListening ? '🎙️' : '🎤'}
-              </span>
-            </button>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  border: '2px solid white',
+                  borderTop: '2px solid transparent',
+                  borderRadius: '50%'
+                }}
+              />
+              {t('home.refreshing', 'Actualizando...')}
+            </motion.div>
           )}
+        </AnimatePresence>
+
+        {/* Barra de progreso de pull */}
+        <AnimatePresence>
+          {progress > 0 && !isRefreshing && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '3px',
+                backgroundColor: DESIGN_TOKENS.colors.primary,
+                zIndex: 1000
+              }}
+            >
+              <motion.div
+                style={{
+                  height: '100%',
+                  backgroundColor: DESIGN_TOKENS.colors.primaryLight,
+                  width: `${progress * 100}%`
+                }}
+                transition={{ duration: 0.1 }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Título visible solo en dispositivos móviles */}
+        <div className="col-12 d-md-none">
+          <h1 className="mobile-title">{t('home.title')}</h1>
         </div>
 
-        {/* Mensaje de error de voz */}
-        {speechError && (
-          <div className="voice-error" role="alert" aria-live="polite">
-            {speechError}
-          </div>
-        )}
+       {/* Controles de accesibilidad y tema */}
+       <div className="controls-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+         <AccessibilityControls />
+         <ThemeToggle />
+       </div>
 
-        <button
-          onClick={() => setMostrarSoloFavoritos(!mostrarSoloFavoritos)}
-          className={`favorites-toggle-btn ${mostrarSoloFavoritos ? 'active' : ''}`}
-          aria-pressed={mostrarSoloFavoritos}
-          aria-label={mostrarSoloFavoritos ? t('home.showAll') : t('home.showFavorites')}
-        >
-          {t('home.favoritesToggle')}
-        </button>
-      </div>
+       {/* Enlace a privacidad */}
+       <div className="text-center mb-3">
+         <Link to="/privacidad" className="btn btn-link btn-sm text-muted">
+           🛡️ {t('privacy.privacyLink')}
+         </Link>
+       </div>
+
+       {/* Sección de recomendaciones personalizadas */}
+       <SeccionRecomendaciones
+         miembros={miembros}
+         favoritos={favoritos}
+         onToggleFavorito={manejarCambioFavorito}
+         visitados={visitados}
+       />
+
+      {/* Contenedor para los filtros de búsqueda y favoritos */}
+     <div className="filters-container" role="region" aria-label={t('accessibility.filters')}>
+       {/* Enlace a privacidad */}
+       <div className="privacy-link-container">
+         <Link to="/privacidad" className="privacy-link-btn" aria-label={t('privacy.backToApp')}>
+           🛡️ {t('privacy.pageTitle')}
+         </Link>
+       </div>
+
+       {/* Barra de búsqueda avanzada - mostrar solo si onboarding completado */}
+       {onboardingCompleted && (
+         <div className="search-container">
+           <SearchBar
+             value={terminoBusqueda}
+             onChange={setTerminoBusqueda}
+             onSearch={(term) => {
+               setTerminoBusqueda(term);
+               trackSearch(term);
+             }}
+             placeholder={t('home.searchPlaceholder')}
+           />
+
+           {/* Mensaje de error de voz */}
+           {speechError && (
+             <div className="voice-error" role="alert" aria-live="polite">
+               {speechError}
+             </div>
+           )}
+         </div>
+       )}
+
+       {/* Barra de búsqueda básica - mostrar durante onboarding */}
+       {!onboardingCompleted && (
+         <div className="search-container">
+           <input
+             type="text"
+             placeholder={t('home.searchPlaceholder')}
+             className="search-bar"
+             value={terminoBusqueda}
+             onChange={e => setTerminoBusqueda(e.target.value)}
+             aria-label={t('home.searchPlaceholder')}
+             role="searchbox"
+             aria-describedby="search-description"
+           />
+           <div id="search-description" className="sr-only">{t('home.searchDescription')}</div>
+
+           {/* Botón de búsqueda por voz */}
+           {speechSupported && (
+             <button
+               onClick={toggleVoiceSearch}
+               className={`voice-search-btn ${isListening ? 'listening' : ''}`}
+               aria-label={isListening ? t('voice.stopListening', 'Detener escucha') : t('voice.startListening', 'Buscar por voz')}
+               title={isListening ? t('voice.stopListening', 'Detener escucha') : t('voice.startListening', 'Buscar por voz')}
+               disabled={!speechSupported}
+             >
+               <span className="voice-icon" aria-hidden="true">
+                 {isListening ? '🎙️' : '🎤'}
+               </span>
+             </button>
+           )}
+         </div>
+       )}
+
+       <button
+         onClick={() => setMostrarSoloFavoritos(!mostrarSoloFavoritos)}
+         className={`favorites-toggle-btn ${mostrarSoloFavoritos ? 'active' : ''}`}
+         aria-pressed={mostrarSoloFavoritos}
+         aria-label={mostrarSoloFavoritos ? t('home.showAll') : t('home.showFavorites')}
+       >
+         {t('home.favoritesToggle')}
+       </button>
+     </div>
 
       {/* Contenedor para mostrar el progreso de perfiles explorados (gamificación) */}
       <div className="progress-container">
-        <p>{t('home.progress', { count: visitados.length, total: miembros.length, context: visitados.length === 1 ? 'one' : 'other' })}</p>
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium">{t('home.progress', { count: visitados.length, total: miembros.length, context: visitados.length === 1 ? 'one' : 'other' })}</span>
+          <span className="text-xs text-gray-500">{Math.round((visitados.length / miembros.length) * 100)}%</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+            style={{ width: `${(visitados.length / miembros.length) * 100}%` }}
+          />
+        </div>
       </div>
+
+      {/* Sección de recomendaciones personalizadas */}
+      <SeccionRecomendaciones
+        miembros={miembros}
+        favoritos={favoritos}
+        onToggleFavorito={manejarCambioFavorito}
+        visitados={visitados}
+      />
 
       {/* Renderizar el contenido principal */}
       <div
@@ -285,7 +506,7 @@ const PaginaPrincipal = () => {
       >
         {renderizarContenido()}
       </div>
-    </>
+     </div>
   );
 };
 

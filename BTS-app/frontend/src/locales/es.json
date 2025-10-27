@@ -13,14 +13,16 @@
     "noResults": "No se encontraron miembros que coincidan con la búsqueda."
   },
   "voice": {
+    "play": "Escuchar",
+    "stop": "Detener",
     "startListening": "Buscar por voz",
     "stopListening": "Detener escucha",
-    "permissionDenied": "Permiso de micrófono denegado",
-    "recognitionError": "Error en reconocimiento de voz",
-    "startError": "Error al iniciar búsqueda por voz",
     "notSupported": "Búsqueda por voz no soportada en este navegador",
+    "permissionDenied": "Permiso de micrófono denegado",
     "noSpeech": "No se detectó habla",
-    "networkError": "Error de red"
+    "networkError": "Error de red",
+    "recognitionError": "Error en reconocimiento de voz",
+    "startError": "Error al iniciar búsqueda por voz"
   },
   "filters": {
     "favorites": "★ Solo Favoritos",
@@ -44,25 +46,46 @@
     "backToList": "← Volver a la lista"
   },
   "accessibility": {
-    "title": "Accesibilidad",
-    "fontSize": "Tamaño de fuente: {{size}}px",
-    "fontSizeLabel": "Tamaño de fuente",
-    "fontSizeDescription": "Ajusta el tamaño de fuente entre 12 y 24 píxeles",
-    "fontSizeSmall": "A-",
-    "fontSizeNormal": "A",
-    "fontSizeLarge": "A+",
-    "fontSizeExtraLarge": "A++",
-    "colorPalette": "Paleta de colores:",
-    "colorPaletteNormal": "Normal",
-    "colorPaletteDeuteranopia": "Deuteranopia",
-    "colorPaletteProtanopia": "Protanopia",
-    "colorPaletteTritanopia": "Tritanopia",
-    "language": "Idioma:",
-    "languageSpanish": "Español",
-    "languageEnglish": "English",
-    "voicePlay": "Escuchar biografía",
-    "voiceStop": "Detener narración"
-  },
+   "title": "Accesibilidad",
+   "fontSize": "Tamaño de fuente: {{size}}px",
+   "fontSizeLabel": "Tamaño de fuente",
+   "fontSizeDescription": "Ajusta el tamaño de fuente entre 12 y 24 píxeles",
+   "fontSizeSmall": "A-",
+   "fontSizeNormal": "A",
+   "fontSizeLarge": "A+",
+   "fontSizeExtraLarge": "A++",
+   "colorPalette": "Paleta de colores:",
+   "colorPaletteNormal": "Normal",
+   "colorPaletteDeuteranopia": "Deuteranopia",
+   "colorPaletteProtanopia": "Protanopia",
+   "colorPaletteTritanopia": "Tritanopia",
+   "language": "Idioma:",
+   "languageSpanish": "Español",
+   "languageEnglish": "English",
+   "voicePlay": "Escuchar biografía",
+   "voiceStop": "Detener narración",
+   "animations": "Animaciones:",
+   "animationsEnabled": "Habilitadas",
+   "animationsDisabled": "Deshabilitadas",
+   "toggleAnimations": "Alternar animaciones"
+ },
+ "theme": {
+   "title": "Tema",
+   "toggleTheme": "Alternar tema",
+   "themeOptions": "Opciones de tema",
+   "settings": "Configuración",
+   "selectTheme": "Seleccionar tema",
+   "auto": "Automático",
+   "light": "Claro",
+   "dark": "Oscuro",
+   "highContrast": "Alto contraste",
+   "sepia": "Sepia",
+   "autoMode": "Modo automático",
+   "lightMode": "Modo claro",
+   "darkMode": "Modo oscuro",
+   "highContrastMode": "Modo alto contraste",
+   "sepiaMode": "Modo sepia"
+ },
   "errors": {
     "loading": "Cargando...",
     "networkError": "La respuesta de la red no fue satisfactoria.",
@@ -93,5 +116,197 @@
     "mainContent": "Contenido principal",
     "navigation": "Navegación principal de la aplicación BTS",
     "appContent": "Lista de miembros de BTS"
+  },
+  "recommendations": {
+    "title": "Recomendaciones para ti",
+    "loading": "Cargando recomendaciones...",
+    "noRecommendations": "No hay recomendaciones disponibles",
+    "refresh": "Actualizar recomendaciones",
+    "reasons": {
+      "similar_role": "Miembro con rol similar",
+      "similar_to_visited": "Similar a miembros que has visitado",
+      "similar_to_favorites": "Similar a tus favoritos",
+      "matches_recent_searches": "Coincide con tus búsquedas recientes",
+      "discovery": "Descubre nuevos miembros"
+    },
+    "viewAll": "Ver todas las recomendaciones",
+    "hide": "Ocultar recomendaciones"
+  },
+  "speech": {
+    "recommendationsIntro": "Aquí tienes {{count}} recomendaciones personalizadas para ti.",
+    "noRecommendations": "No tengo recomendaciones que mostrarte en este momento.",
+    "nextRecommendation": "Siguiente recomendación",
+    "recommendation": {
+      "similarRole": "Te recomiendo a {{name}}, cuyo nombre real es {{real_name}}. Es otro {{role}} como los que te interesan.",
+      "similarToVisited": "{{name}}, de nombre real {{real_name}}, es similar a miembros que has visitado recientemente.",
+      "similarToFavorites": "{{name}} ({{real_name}}) tiene características similares a tus miembros favoritos.",
+      "matchesSearches": "{{name}}, conocido como {{real_name}}, coincide con términos que has buscado últimamente.",
+      "discovery": "Descubre a {{name}}, cuyo nombre real es {{real_name}}. ¡Podría ser una nueva adición a tus favoritos!",
+      "default": "{{name}}, de nombre real {{real_name}}, es un {{role}} de BTS que creo que te interesará."
+    },
+    "memberDetails": "{{name}}, cuyo nombre real es {{real_name}}, es un {{role}} de BTS.",
+    "searchResults": "Encontré {{count}} resultados para '{{term}}'.",
+    "noSearchResults": "No encontré resultados para '{{term}}'.",
+    "searchResult": "Resultado {{index}}: {{name}}, {{role}}.",
+    "keyboardNavigation": "{{name}}, elemento {{position}} de {{total}}.",
+    "filter": {
+      "favoritesOn": "Filtro de favoritos activado.",
+      "favoritesOff": "Filtro de favoritos desactivado.",
+      "searchActive": "Búsqueda activa por '{{term}}'.",
+      "roleFilter": "Filtrando por {{role}}s.",
+      "genericChange": "Filtro actualizado."
+    },
+    "userStats": "Has visitado {{visits}} perfiles, tienes {{favorites}} favoritos y has realizado {{searches}} búsquedas."
+  },
+  "home": {
+    "title": "Miembros de BTS",
+    "searchPlaceholder": "Buscar miembros...",
+    "searchDescription": "Buscar miembros de BTS por nombre, nombre real o rol",
+    "noResults": "No se encontraron miembros",
+    "favoritesToggle": "Favoritos",
+    "showAll": "Mostrar todos",
+    "showFavorites": "Mostrar favoritos",
+    "progress": "Has explorado {{count}} de {{total}} perfiles",
+    "membersList": "Lista de miembros de BTS",
+    "error": "Error al cargar los miembros"
+  },
+  "member": {
+    "visited": "Visitado",
+    "viewDetails": "Ver detalles de {{name}} ({{realName}}) - {{role}}",
+    "addFavorite": "Añadir {{name}} a favoritos",
+    "removeFavorite": "Quitar {{name}} de favoritos"
+  },
+  "accessibility": {
+    "filters": "Filtros y búsqueda",
+    "membersList": "Lista de miembros de BTS"
+  },
+  "privacy": {
+    "title": "Panel de Privacidad",
+    "pageTitle": "Privacidad y Datos",
+    "navigation": "Navegación de privacidad",
+    "backToApp": "Volver a la aplicación",
+    "showDetails": "Mostrar detalles",
+    "hideDetails": "Ocultar detalles",
+    "storageSize": "Tamaño de almacenamiento",
+    "lastActivity": "Última actividad",
+    "never": "Nunca",
+    "totalVisits": "Visitas totales",
+    "recentSearches": "Búsquedas recientes",
+    "none": "Ninguna",
+    "cancel": "Cancelar",
+    "dataInfo": {
+      "title": "Información sobre tus datos",
+      "analytics": {
+        "title": "Datos de análisis",
+        "visits": "Visitas a perfiles de miembros",
+        "searches": "Términos de búsqueda",
+        "favorites": "Miembros favoritos",
+        "timeSpent": "Tiempo dedicado en la aplicación"
+      },
+      "preferences": {
+        "title": "Preferencias de usuario",
+        "language": "Idioma preferido",
+        "theme": "Tema visual",
+        "accessibility": "Configuraciones de accesibilidad",
+        "voice": "Preferencias de voz y audio"
+      }
+    },
+    "controls": {
+      "title": "Controles de privacidad",
+      "optOut": {
+        "title": "Opciones de exclusión",
+        "analytics": "Optar por no participar en análisis de datos",
+        "voiceSearch": "Desactivar búsqueda por voz",
+        "searchHistory": "No guardar historial de búsqueda"
+      }
+    },
+    "microphone": {
+      "title": "Uso del micrófono",
+      "description": "La aplicación solicita acceso al micrófono únicamente para la función de búsqueda por voz. Los datos de audio se procesan localmente y no se almacenan ni transmiten.",
+      "requestPermission": "Solicitar permiso",
+      "permissionStatus": "Estado del permiso"
+    },
+    "storage": {
+      "title": "Transparencia de almacenamiento",
+      "localStorage": "Todos los datos se almacenan únicamente en el almacenamiento local del navegador.",
+      "noServer": "No se transmiten datos a servidores externos.",
+      "encryption": "Los datos sensibles están protegidos por las políticas de seguridad del navegador."
+    },
+    "actions": {
+      "title": "Acciones de datos",
+      "export": {
+        "title": "Exportar datos",
+        "ariaLabel": "Exportar todos tus datos personales",
+        "jsonFormat": "Formato estructurado completo",
+        "csvFormat": "Formato simplificado para hojas de cálculo",
+        "confirm": "Exportar"
+      },
+      "delete": {
+        "title": "Eliminar todos los datos",
+        "ariaLabel": "Eliminar permanentemente todos tus datos",
+        "confirm": "Eliminar definitivamente",
+        "warning": "Esta acción no se puede deshacer.",
+        "list": {
+          "analytics": "Datos de análisis de uso",
+          "preferences": "Preferencias personalizadas",
+          "favorites": "Lista de miembros favoritos",
+          "searchHistory": "Historial de búsquedas"
+        },
+        "irreversible": "Esta acción es irreversible.",
+        "success": "Todos los datos han sido eliminados exitosamente."
+      }
+    },
+    "compliance": {
+      "title": "Cumplimiento normativo",
+      "gdpr": "GDPR",
+      "ccpa": "CCPA",
+      "wcag": "WCAG 2.1",
+      "description": "Esta aplicación cumple con los estándares de privacidad GDPR, CCPA y las directrices de accesibilidad WCAG 2.1."
+    },
+    "links": {
+      "policy": "Política de privacidad",
+      "terms": "Términos de servicio",
+      "contact": "Contacto"
+    },
+    "copyright": "© {{year}} BTS App. Todos los derechos reservados.",
+    "importSuccess": "Datos importados exitosamente",
+    "importError": "Error al importar datos. Verifica el formato del archivo.",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar permanentemente todos tus datos? Esta acción no se puede deshacer."
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "¡Bienvenido a BTS App!",
+      "description": "Descubre todo sobre los miembros de BTS con esta aplicación interactiva. Te guiaremos a través de las funcionalidades principales."
+    },
+    "search": {
+      "title": "Búsqueda Inteligente",
+      "description": "Utiliza la barra de búsqueda para encontrar miembros por nombre, rol o características. También puedes buscar usando tu voz."
+    },
+    "favorites": {
+      "title": "Sistema de Favoritos",
+      "description": "Marca tus miembros favoritos con el corazón. Accede rápidamente a ellos desde el filtro de favoritos."
+    },
+    "gamification": {
+      "title": "Sistema de Gamificación",
+      "description": "Gana puntos explorando perfiles, completando biografías y alcanzando logros. ¡Conviértete en un fan experto!"
+    },
+    "wearable": {
+      "title": "Optimizado para Wearables",
+      "description": "La aplicación se adapta automáticamente a tu dispositivo, incluyendo smartwatches y dispositivos pequeños."
+    },
+    "pwa": {
+      "title": "Aplicación Web Progresiva",
+      "description": "Instala la app en tu dispositivo para acceso offline, notificaciones push y experiencia nativa."
+    },
+    "completion": {
+      "title": "¡Tutorial Completado!",
+      "description": "Ya estás listo para explorar BTS. Recuerda que puedes reiniciar este tutorial en cualquier momento desde la configuración."
+    },
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "skip": "Saltar",
+    "finish": "Finalizar",
+    "restart": "Reiniciar Tutorial",
+    "keyboardHints": "Usa ← → para navegar, Espacio para siguiente, Escape para saltar"
   }
 }

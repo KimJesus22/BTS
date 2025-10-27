@@ -1,0 +1,269 @@
+.install-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+  backdrop-filter: blur(2px);
+}
+
+.install-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  max-width: 400px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.install-content {
+  background: var(--theme-surface, #ffffff);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--theme-border, #dadce0);
+}
+
+.install-icon {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.install-text {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.install-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--theme-text, #202124);
+  margin: 0 0 8px 0;
+}
+
+.install-description {
+  font-size: 14px;
+  color: var(--theme-textSecondary, #5f6368);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.install-features {
+  margin-bottom: 24px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--theme-text, #202124);
+}
+
+.feature-item svg {
+  flex-shrink: 0;
+}
+
+.install-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.install-button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  min-width: 80px;
+}
+
+.install-button:focus {
+  outline: 2px solid var(--theme-focus, #e8f0fe);
+  outline-offset: 2px;
+}
+
+.install-button.primary {
+  background: var(--theme-primary, #1a73e8);
+  color: white;
+}
+
+.install-button.primary:hover {
+  background: var(--theme-primary, #1557b0);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+}
+
+.install-button.secondary {
+  background: transparent;
+  color: var(--theme-textSecondary, #5f6368);
+  border: 1px solid var(--theme-border, #dadce0);
+}
+
+.install-button.secondary:hover {
+  background: var(--theme-hover, #f1f3f4);
+  border-color: var(--theme-borderLight, #e8eaed);
+}
+
+/* Tema oscuro */
+[data-theme="dark"] .install-content {
+  background: var(--theme-surface, #1e1e1e);
+  border-color: var(--theme-border, #5f6368);
+}
+
+[data-theme="dark"] .install-title {
+  color: var(--theme-text, #e8eaed);
+}
+
+[data-theme="dark"] .install-description {
+  color: var(--theme-textSecondary, #9aa0a6);
+}
+
+[data-theme="dark"] .feature-item {
+  color: var(--theme-text, #e8eaed);
+}
+
+[data-theme="dark"] .install-button.secondary {
+  color: var(--theme-textSecondary, #9aa0a6);
+  border-color: var(--theme-border, #5f6368);
+}
+
+[data-theme="dark"] .install-button.secondary:hover {
+  background: var(--theme-hover, #2d2d2d);
+  border-color: var(--theme-borderLight, #3c4043);
+}
+
+/* Tema alto contraste */
+[data-theme="highContrast"] .install-content {
+  background: var(--theme-background, #000000);
+  border-color: var(--theme-border, #ffffff);
+}
+
+[data-theme="highContrast"] .install-title {
+  color: var(--theme-text, #ffffff);
+}
+
+[data-theme="highContrast"] .install-description {
+  color: var(--theme-textSecondary, #ffff00);
+}
+
+[data-theme="highContrast"] .feature-item {
+  color: var(--theme-text, #ffffff);
+}
+
+[data-theme="highContrast"] .install-button.primary {
+  background: var(--theme-primary, #ffffff);
+  color: var(--theme-background, #000000);
+}
+
+[data-theme="highContrast"] .install-button.secondary {
+  color: var(--theme-text, #ffffff);
+  border-color: var(--theme-border, #ffffff);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .install-modal {
+    width: 95%;
+    max-width: none;
+  }
+
+  .install-content {
+    padding: 20px;
+  }
+
+  .install-title {
+    font-size: 18px;
+  }
+
+  .install-description {
+    font-size: 13px;
+  }
+
+  .install-actions {
+    flex-direction: column-reverse;
+  }
+
+  .install-button {
+    width: 100%;
+    padding: 12px;
+  }
+}
+
+/* Animaciones */
+.install-modal {
+  animation: modalEnter 0.3s ease-out;
+}
+
+.install-modal[style*="scale(0.8)"] {
+  animation: modalExit 0.3s ease-in;
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes modalExit {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .install-overlay,
+  .install-modal,
+  .install-button {
+    animation: none;
+    transition: none;
+  }
+
+  .install-button:hover {
+    transform: none;
+  }
+}
+
+/* Focus management */
+.install-button:focus-visible {
+  outline: 2px solid var(--theme-primary, #1a73e8);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+.install-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.install-modal::-webkit-scrollbar-track {
+  background: var(--theme-surface, #ffffff);
+}
+
+.install-modal::-webkit-scrollbar-thumb {
+  background: var(--theme-border, #dadce0);
+  border-radius: 3px;
+}
+
+.install-modal::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-borderLight, #e8eaed);
+}

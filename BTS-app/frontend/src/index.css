@@ -1,3 +1,111 @@
+/* Variables CSS globales para temas */
+:root {
+  /* Tema claro por defecto */
+  --theme-primary: #1a73e8;
+  --theme-secondary: #34a853;
+  --theme-accent: #ea4335;
+  --theme-background: #ffffff;
+  --theme-surface: #f8f9fa;
+  --theme-surfaceElevated: #ffffff;
+  --theme-text: #202124;
+  --theme-textSecondary: #5f6368;
+  --theme-textMuted: #80868b;
+  --theme-border: #dadce0;
+  --theme-borderLight: #e8eaed;
+  --theme-shadow: rgba(60, 64, 67, 0.3);
+  --theme-shadowLight: rgba(60, 64, 67, 0.15);
+  --theme-oledBg: #ffffff;
+  --theme-oledSurface: #f8f9fa;
+  --theme-hover: #f1f3f4;
+  --theme-active: #e8eaed;
+  --theme-focus: #e8f0fe;
+  --theme-success: #34a853;
+  --theme-warning: #fbbc04;
+  --theme-error: #ea4335;
+  --theme-info: #4285f4;
+
+  /* Transiciones suaves para cambios de tema */
+  --theme-transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Tema oscuro */
+[data-theme="dark"] {
+  --theme-primary: #8ab4f8;
+  --theme-secondary: #81c995;
+  --theme-accent: #f28b82;
+  --theme-background: #121212;
+  --theme-surface: #1e1e1e;
+  --theme-surfaceElevated: #2d2d2d;
+  --theme-text: #e8eaed;
+  --theme-textSecondary: #9aa0a6;
+  --theme-textMuted: #5f6368;
+  --theme-border: #5f6368;
+  --theme-borderLight: #3c4043;
+  --theme-shadow: rgba(0, 0, 0, 0.6);
+  --theme-shadowLight: rgba(0, 0, 0, 0.3);
+  --theme-oledBg: #000000;
+  --theme-oledSurface: #0d0d0d;
+  --theme-hover: #2d2d2d;
+  --theme-active: #3c4043;
+  --theme-focus: #1a237e;
+  --theme-success: #81c995;
+  --theme-warning: #fdd663;
+  --theme-error: #f28b82;
+  --theme-info: #8ab4f8;
+}
+
+/* Tema de alto contraste */
+[data-theme="highContrast"] {
+  --theme-primary: #ffffff;
+  --theme-secondary: #ffff00;
+  --theme-accent: #ff0000;
+  --theme-background: #000000;
+  --theme-surface: #000000;
+  --theme-surfaceElevated: #000000;
+  --theme-text: #ffffff;
+  --theme-textSecondary: #ffff00;
+  --theme-textMuted: #ffffff;
+  --theme-border: #ffffff;
+  --theme-borderLight: #ffffff;
+  --theme-shadow: rgba(255, 255, 255, 0.5);
+  --theme-shadowLight: rgba(255, 255, 255, 0.3);
+  --theme-oledBg: #000000;
+  --theme-oledSurface: #000000;
+  --theme-hover: #333333;
+  --theme-active: #666666;
+  --theme-focus: #ffffff;
+  --theme-success: #00ff00;
+  --theme-warning: #ffff00;
+  --theme-error: #ff0000;
+  --theme-info: #0080ff;
+}
+
+/* Tema sepia */
+[data-theme="sepia"] {
+  --theme-primary: #8b4513;
+  --theme-secondary: #daa520;
+  --theme-accent: #cd853f;
+  --theme-background: #f4ecd8;
+  --theme-surface: #f5f5dc;
+  --theme-surfaceElevated: #faf0e6;
+  --theme-text: #5c4033;
+  --theme-textSecondary: #8b7355;
+  --theme-textMuted: #a0522d;
+  --theme-border: #daa520;
+  --theme-borderLight: #f5deb3;
+  --theme-shadow: rgba(139, 69, 19, 0.3);
+  --theme-shadowLight: rgba(139, 69, 19, 0.15);
+  --theme-oledBg: #f4ecd8;
+  --theme-oledSurface: #f5f5dc;
+  --theme-hover: #faf0e6;
+  --theme-active: #f5deb3;
+  --theme-focus: #ffe4b5;
+  --theme-success: #daa520;
+  --theme-warning: #cd853f;
+  --theme-error: #8b4513;
+  --theme-info: #a0522d;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -5,9 +113,119 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Aplicar colores del tema */
+  background-color: var(--theme-background);
+  color: var(--theme-text);
+  transition: var(--theme-transition);
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Aplicar transiciones suaves a todos los elementos */
+* {
+  transition: var(--theme-transition);
+}
+
+/* Clase para elementos en transición de tema */
+.theme-transitioning * {
+  transition-duration: 0.8s !important;
+}
+
+/* Soporte para reducción de movimiento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  body {
+    transition: none !important;
+  }
+
+  .theme-transitioning * {
+    transition: none !important;
+  }
+}
+
+/* Optimizaciones para pantallas OLED */
+@media (prefers-color-scheme: dark) and (max-resolution: 300dpi) {
+  body {
+    background-color: var(--theme-oledBg);
+  }
+
+  .card,
+  .modal-content,
+  .dropdown-menu {
+    background-color: var(--theme-oledSurface);
+  }
+}
+
+/* Optimizaciones para wearables y dispositivos pequeños */
+@media (max-width: 400px) {
+  body {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  /* Reducir padding en contenedores */
+  .container {
+    padding: 0 8px;
+  }
+
+  /* Optimizaciones de toque */
+  button,
+  .btn,
+  a[role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Ocultar elementos no esenciales en wearables */
+  .bottom-nav {
+    display: none;
+  }
+}
+
+/* Tema de ahorro de batería */
+[data-theme="batterySaver"] {
+  --theme-primary: #666666;
+  --theme-secondary: #888888;
+  --theme-accent: #aaaaaa;
+  --theme-background: #000000;
+  --theme-surface: #111111;
+  --theme-surfaceElevated: #1a1a1a;
+  --theme-text: #ffffff;
+  --theme-textSecondary: #cccccc;
+  --theme-textMuted: #999999;
+  --theme-border: #333333;
+  --theme-borderLight: #444444;
+  --theme-shadow: none;
+  --theme-shadowLight: none;
+  --theme-oledBg: #000000;
+  --theme-oledSurface: #000000;
+  --theme-hover: #1a1a1a;
+  --theme-active: #222222;
+  --theme-focus: #555555;
+  --theme-success: #888888;
+  --theme-warning: #aaaaaa;
+  --theme-error: #cccccc;
+  --theme-info: #777777;
+
+  /* Desactivar animaciones y transiciones */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Optimizaciones de batería */
+  img {
+    filter: none !important;
+  }
+
+  .card,
+  .modal-content {
+    box-shadow: none !important;
+  }
 }

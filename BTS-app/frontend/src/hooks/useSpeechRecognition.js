@@ -1,9 +1,11 @@
 // Hook personalizado para reconocimiento de voz (SpeechRecognition)
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import useUserPreferences from './useUserPreferences';
 
 const useSpeechRecognition = () => {
   const { i18n } = useTranslation();
+  const { preferences } = useUserPreferences();
   const [isSupported, setIsSupported] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -100,10 +102,27 @@ const useSpeechRecognition = () => {
       return;
     }
 
+    // Verificar si el usuario ha desactivado la búsqueda por voz
+    if (!preferences.voiceSearch) {
+      setError('Búsqueda por voz desactivada en configuración de privacidad');
+      return;
+    }
+
     try {
       // Solicitar permisos si es necesario
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
+
+      // Mostrar notificación de privacidad si es la primera vez
+      if (!localStorage.getItem('bts-privacy-microphone-notified')) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('BTS App - Uso del micrófono', {
+            body: 'La aplicación está usando el micrófono para búsqueda por voz. Los datos de audio se procesan localmente y no se almacenan.',
+            icon: '/logo192.png'
+          });
+        }
+        localStorage.setItem('bts-privacy-microphone-notified', 'true');
       }
 
       setError(null);
@@ -113,7 +132,7 @@ const useSpeechRecognition = () => {
       setError('Error al acceder al micrófono');
       console.error('Error al iniciar reconocimiento:', err);
     }
-  }, [isSupported]);
+  }, [isSupported, preferences.voiceSearch]);
 
   // Función para detener reconocimiento
   const stopListening = useCallback(() => {

@@ -1,0 +1,321 @@
+.notification-settings {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.notification-unsupported {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--theme-textMuted, #80868b);
+}
+
+.notification-unsupported svg {
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.notification-header {
+  margin-bottom: 24px;
+}
+
+.notification-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--theme-text, #202124);
+  margin: 0 0 8px 0;
+}
+
+.notification-description {
+  font-size: 16px;
+  color: var(--theme-textSecondary, #5f6368);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.notification-status {
+  background: var(--theme-surface, #ffffff);
+  border: 1px solid var(--theme-border, #dadce0);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.status-item:last-child {
+  margin-bottom: 0;
+}
+
+.status-label {
+  font-weight: 500;
+  color: var(--theme-text, #202124);
+}
+
+.status-value {
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.status-value.granted,
+.status-value.active {
+  background: var(--theme-success, #34a853);
+  color: white;
+}
+
+.status-value.denied,
+.status-value.inactive {
+  background: var(--theme-error, #ea4335);
+  color: white;
+}
+
+.status-value.default {
+  background: var(--theme-warning, #fbbc04);
+  color: var(--theme-text, #202124);
+}
+
+.notification-actions {
+  margin-bottom: 24px;
+}
+
+.notification-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+  margin-right: 12px;
+  margin-bottom: 12px;
+}
+
+.notification-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.notification-button.subscribe {
+  background: var(--theme-primary, #1a73e8);
+  color: white;
+}
+
+.notification-button.subscribe:hover:not(:disabled) {
+  background: var(--theme-primary, #1557b0);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+}
+
+.notification-button.unsubscribe {
+  background: var(--theme-error, #ea4335);
+  color: white;
+}
+
+.notification-button.unsubscribe:hover:not(:disabled) {
+  background: #d33b2c;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(234, 67, 53, 0.3);
+}
+
+.notification-button.test {
+  background: var(--theme-secondary, #34a853);
+  color: white;
+}
+
+.notification-button.test:hover:not(:disabled) {
+  background: #2e7d32;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(52, 168, 83, 0.3);
+}
+
+.notification-button.custom {
+  background: var(--theme-accent, #ea4335);
+  color: white;
+}
+
+.notification-button.custom:hover:not(:disabled) {
+  background: #d33b2c;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(234, 67, 53, 0.3);
+}
+
+.test-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.notification-info {
+  background: var(--theme-surfaceElevated, #f8f9fa);
+  border: 1px solid var(--theme-borderLight, #e8eaed);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--theme-textSecondary, #5f6368);
+  line-height: 1.4;
+}
+
+.info-item:last-child {
+  margin-bottom: 0;
+}
+
+.info-item svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Tema oscuro */
+[data-theme="dark"] .notification-status {
+  background: var(--theme-surface, #1e1e1e);
+  border-color: var(--theme-border, #5f6368);
+}
+
+[data-theme="dark"] .notification-info {
+  background: var(--theme-surfaceElevated, #2d2d2d);
+  border-color: var(--theme-borderLight, #3c4043);
+}
+
+[data-theme="dark"] .notification-title {
+  color: var(--theme-text, #e8eaed);
+}
+
+[data-theme="dark"] .notification-description {
+  color: var(--theme-textSecondary, #9aa0a6);
+}
+
+[data-theme="dark"] .status-label {
+  color: var(--theme-text, #e8eaed);
+}
+
+[data-theme="dark"] .info-item {
+  color: var(--theme-textSecondary, #9aa0a6);
+}
+
+/* Tema alto contraste */
+[data-theme="highContrast"] .notification-status {
+  background: var(--theme-background, #000000);
+  border-color: var(--theme-border, #ffffff);
+}
+
+[data-theme="highContrast"] .notification-info {
+  background: var(--theme-background, #000000);
+  border-color: var(--theme-border, #ffffff);
+}
+
+[data-theme="highContrast"] .notification-title {
+  color: var(--theme-text, #ffffff);
+}
+
+[data-theme="highContrast"] .notification-description {
+  color: var(--theme-textSecondary, #ffff00);
+}
+
+[data-theme="highContrast"] .status-label {
+  color: var(--theme-text, #ffffff);
+}
+
+[data-theme="highContrast"] .info-item {
+  color: var(--theme-text, #ffffff);
+}
+
+[data-theme="highContrast"] .notification-button.subscribe {
+  background: var(--theme-primary, #ffffff);
+  color: var(--theme-background, #000000);
+  border: 2px solid var(--theme-primary, #ffffff);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .notification-settings {
+    padding: 16px;
+  }
+
+  .notification-title {
+    font-size: 20px;
+  }
+
+  .notification-actions {
+    text-align: center;
+  }
+
+  .notification-button {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+
+  .test-actions {
+    justify-content: center;
+  }
+
+  .status-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .notification-settings {
+    padding: 12px;
+  }
+
+  .notification-status,
+  .notification-info {
+    padding: 12px;
+  }
+
+  .info-item {
+    font-size: 13px;
+  }
+}
+
+/* Focus management */
+.notification-button:focus-visible {
+  outline: 2px solid var(--theme-primary, #1a73e8);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .notification-button:hover {
+    transform: none;
+  }
+
+  .loading-spinner {
+    animation: none;
+  }
+}
